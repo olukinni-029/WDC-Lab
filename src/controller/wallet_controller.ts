@@ -6,6 +6,7 @@ import { UserService } from "../services/user.service";
 import emitter from "../utils/common/eventEmitter";
 import { generateRsaKeyPairAsync } from "../utils/common/generateKey";
 import logger from "../utils/logger";
+import { restClientWithHeaders } from "../utils/common/restclient";
 
 
 
@@ -15,63 +16,63 @@ export const WalletController = {
 
         const user = await UserService.findUserById(userId);
         if (!user) {
-          return errorResponse(res, "User not found", 404);
+            return errorResponse(res, "User not found", 404);
         }
-    
+
         const existingAccount = await WalletService.findByUserId(
-          userId.toString(),
+            userId.toString(),
         );
         if (existingAccount) {
-          return successResponse(
-            res,
-            existingAccount,
-            "Parallex account already exists",
-          );
+            return successResponse(
+                res,
+                existingAccount,
+                "Parallex account already exists",
+            );
         }
 
         const { publicKey, privateKey } = await generateRsaKeyPairAsync();
-    
+
         emitter.emit("Create_Virtual_Account", {
-          userId: user._id,
-          firstName: user.firstName,
-          lastName: "WDCLAB",
-          middleName: user.lastName,
-          publicKey,
-          privateKey,
-          bankName: "Parallex Bank",
-          bankCode: "000030",
-          phoneNumber: user.phoneNumber
+            userId: user._id,
+            firstName: user.firstName,
+            lastName: "WDCLAB",
+            middleName: user.lastName,
+            publicKey,
+            privateKey,
+            bankName: "Parallex Bank",
+            bankCode: "000030",
+            phoneNumber: user.phoneNumber
         });
-    
+
         return successResponse(
-          res,
-          {},
-          "Parallex account created and linked successfully",
+            res,
+            {},
+            "Parallex account created and linked successfully",
         );
-      }),
+    }),
 
 
     requestWithdrawal: asyncHandler(async (req: Request, res: Response) => {
         const userId = req.user.id;
-       const {
-                amount,
-                beneficiaryAccountName,
-                beneficiaryAccountNumber,
-                destinationInstitutionCode,
-                nameEnquiryRef,
-                posReference,
-            } = req.body;
+        const {
+            amount,
+            beneficiaryAccountName,
+            beneficiaryAccountNumber,
+            destinationInstitutionCode,
+            nameEnquiryRef,
+            posReference,
+        } = req.body;
         const user = await UserService.findUserById(userId);
-        if(!user){
+        if (!user) {
             return errorResponse(res, "User not found", 404);
         }
         // 
         const withdrawal = await WalletService.createWithdrawalRequest(user._id.toString(), amount, beneficiaryAccountName,
-                beneficiaryAccountNumber,
-                destinationInstitutionCode,
-                nameEnquiryRef,
-                posReference,);
-        if(!withdrawal){
+            beneficiaryAccountNumber,
+            destinationInstitutionCode,
+            nameEnquiryRef,
+            posReference,);
+        if (!withdrawal) {
             return errorResponse(res, "Withdrawal request failed", 400);
         }
 
@@ -80,109 +81,120 @@ export const WalletController = {
 
     nameEnquiry: asyncHandler(async (req: Request, res: Response) => {
         const { bankCode, accountNumber } = req.body;
-console.log("Received name enquiry request:", { bankCode, accountNumber });
-        const nameEnquiryResult = await WalletService.performNameEnquiry(
-          bankCode,
-          accountNumber
+
+        const headers = {
+            "x-api-key":
+                "02e4d8c76fae2e38117bb406a842cce07236e7dced3bc6637780a85a21b4110c",
+            "merchant-id": "TFSOQZOMZHT8LCU",
+            "Content-Type": "application/json",
+        };
+
+        const response = await restClientWithHeaders(
+            "POST",
+            "https://d9o8urztf23tc.cloudfront.net/api/v1/partners/nameenquiry",
+            {
+                accountNumber,
+                bankCode,
+            },
+            headers
         );
-        // if (!nameEnquiryResult.success) {
-        //   return errorResponse(res, nameEnquiryResult.message, 400);
-        // }
-          return successResponse(res,nameEnquiryResult, "Name enquiry successful");
-      }),
 
-   handleWithdrawalWebhook: asyncHandler(async (req: Request, res: Response) => {
 
-  const signature = req.headers["x-parallex-signature"];
+        return successResponse(res, response.data, "Name enquiry successful");
+    }),
 
-  /**
-   * ✅ VERIFY WEBHOOK SOURCE
-   */
-  if (signature !== process.env.PARALEX_WEBHOOK_SECRET) {
+    handleWithdrawalWebhook: asyncHandler(async (req: Request, res: Response) => {
 
-    logger.warn("Invalid webhook signature");
+        const signature = req.headers["x-parallex-signature"];
 
-    return errorResponse(res, "Unauthorized webhook source", 401);
+        /**
+         * ✅ VERIFY WEBHOOK SOURCE
+         */
+        if (signature !== process.env.PARALEX_WEBHOOK_SECRET) {
 
-  }
+            logger.warn("Invalid webhook signature");
 
-  const { transferRef, status, message } = req.body;
+            return errorResponse(res, "Unauthorized webhook source", 401);
 
-  if (!transferRef || !status) {
+        }
 
-    logger.warn("Invalid webhook payload:", req.body);
+        const { transferRef, status, message } = req.body;
 
-    return errorResponse(
-      res,
-      "Missing required fields: transferRef, status",
-      400
-    );
+        if (!transferRef || !status) {
 
-  }
+            logger.warn("Invalid webhook payload:", req.body);
 
-  try {
+            return errorResponse(
+                res,
+                "Missing required fields: transferRef, status",
+                400
+            );
 
-    const result = await WalletService.processWithdrawalWebhook({
-      transferRef,
-      status,
-      message,
-    });
+        }
 
-    return successResponse(
-      res,
-      {
-        transferRef,
-        processed: true
-      },
-      "Webhook processed successfully"
-    );
+        try {
 
-  } catch (error) {
+            const result = await WalletService.processWithdrawalWebhook({
+                transferRef,
+                status,
+                message,
+            });
 
-    logger.error("Webhook processing error:", error);
+            return successResponse(
+                res,
+                {
+                    transferRef,
+                    processed: true
+                },
+                "Webhook processed successfully"
+            );
 
-    /**
-     * Important: still return 200
-     * so bank does not retry forever
-     */
+        } catch (error) {
 
-    return successResponse(
-      res,
-      {
-        transferRef,
-        processed: false,
-        error: error instanceof Error ? error.message : "Unknown error"
-      },
-      "Webhook received but processing failed"
-    );
+            logger.error("Webhook processing error:", error);
 
-  }
+            /**
+             * Important: still return 200
+             * so bank does not retry forever
+             */
 
-}),
+            return successResponse(
+                res,
+                {
+                    transferRef,
+                    processed: false,
+                    error: error instanceof Error ? error.message : "Unknown error"
+                },
+                "Webhook received but processing failed"
+            );
 
-creditWalletWebhook: asyncHandler(async (req: Request, res: Response) => {
+        }
 
-  const {
-    accountNumber,
-    amount,
-    sessionId,
-    originatorName,
-    originatorAccountNumber
-  } = req.body;
+    }),
 
-  const result = await WalletService.creditWallet({
-    accountNumber,
-    amount,
-    sessionId,
-    originatorName,
-    originatorAccountNumber
-  });
+    creditWalletWebhook: asyncHandler(async (req: Request, res: Response) => {
 
-  return res.status(200).json({
-    success: true,
-    message: "Webhook processed",
-    data: result
-  });
+        const {
+            accountNumber,
+            amount,
+            sessionId,
+            originatorName,
+            originatorAccountNumber
+        } = req.body;
 
-})
+        const result = await WalletService.creditWallet({
+            accountNumber,
+            amount,
+            sessionId,
+            originatorName,
+            originatorAccountNumber
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Webhook processed",
+            data: result
+        });
+
+    })
 };
