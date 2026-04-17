@@ -1,0 +1,102 @@
+2026-04-16T17:30:00.596Z [right meow!] [31merror[39m: Name enquiry failed
+2026-04-16T17:30:00.603Z [right meow!] [31merror[39m: Error: Name enquiry failed - Error: Name enquiry failed
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:34:13)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-16T17:31:43.413Z [right meow!] [31merror[39m: Cannot read properties of undefined (reading 'response')
+2026-04-16T17:31:43.416Z [right meow!] [31merror[39m: Error: Cannot read properties of undefined (reading 'response') - TypeError: Cannot read properties of undefined (reading 'response')
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:38:33)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-16T17:32:52.478Z [right meow!] [31merror[39m: Cannot read properties of undefined (reading 'response')
+2026-04-16T17:32:52.479Z [right meow!] [31merror[39m: Error: Cannot read properties of undefined (reading 'response') - TypeError: Cannot read properties of undefined (reading 'response')
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:38:33)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-16T17:35:58.072Z [right meow!] [31merror[39m: Name enquiry failed
+2026-04-16T17:35:58.075Z [right meow!] [31merror[39m: Error: Name enquiry failed - Error: Name enquiry failed
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:38:18)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-16T17:37:57.824Z [right meow!] [31merror[39m: Name enquiry failed
+2026-04-16T17:37:57.834Z [right meow!] [31merror[39m: Error: Name enquiry failed - Error: Name enquiry failed
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:36:13)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-16T17:39:43.312Z [right meow!] [31merror[39m: Name enquiry failed
+2026-04-16T17:39:43.313Z [right meow!] [31merror[39m: Error: Name enquiry failed - Error: Name enquiry failed
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:36:13)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-16T17:40:23.516Z [right meow!] [31merror[39m: Name enquiry failed
+2026-04-16T17:40:23.517Z [right meow!] [31merror[39m: Error: Name enquiry failed - Error: Name enquiry failed
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:36:13)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-16T17:41:16.819Z [right meow!] [31merror[39m: Name enquiry failed
+2026-04-16T17:41:16.823Z [right meow!] [31merror[39m: Error: Name enquiry failed - Error: Name enquiry failed
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:36:13)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-16T18:45:53.011Z [right meow!] [31merror[39m: Name enquiry failed
+2026-04-16T18:45:53.017Z [right meow!] [31merror[39m: Error: Name enquiry failed - Error: Name enquiry failed
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:42:13)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-16T18:49:11.803Z [right meow!] [31merror[39m: Name enquiry failed
+2026-04-16T18:49:11.812Z [right meow!] [31merror[39m: Error: Name enquiry failed - Error: Name enquiry failed
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:36:13)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-16T18:50:49.966Z [right meow!] [31merror[39m: Name enquiry failed
+2026-04-16T18:50:49.977Z [right meow!] [31merror[39m: Error: Name enquiry failed - Error: Name enquiry failed
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:42:13)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-17T08:48:56.474Z [right meow!] [31merror[39m: Name enquiry failed
+2026-04-17T08:48:56.477Z [right meow!] [31merror[39m: Error: Name enquiry failed - Error: Name enquiry failed
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:42:13)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-17T09:08:48.302Z [right meow!] [31merror[39m: Unable to perform name enquiry
+2026-04-17T09:08:48.307Z [right meow!] [31merror[39m: Error: Unable to perform name enquiry - Error: Unable to perform name enquiry
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:52:11)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-17T09:10:07.562Z [right meow!] [31merror[39m: Unable to perform name enquiry
+2026-04-17T09:10:07.564Z [right meow!] [31merror[39m: Error: Unable to perform name enquiry - Error: Unable to perform name enquiry
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:52:11)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-17T09:11:25.971Z [right meow!] [31merror[39m: Unable to perform name enquiry
+2026-04-17T09:11:25.972Z [right meow!] [31merror[39m: Error: Unable to perform name enquiry - Error: Unable to perform name enquiry
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:52:11)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-17T09:11:46.438Z [right meow!] [31merror[39m: Unable to perform name enquiry
+2026-04-17T09:11:46.439Z [right meow!] [31merror[39m: Error: Unable to perform name enquiry - Error: Unable to perform name enquiry
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:52:11)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-17T09:29:10.391Z [right meow!] [31merror[39m: Unable to perform name enquiry
+2026-04-17T09:29:10.394Z [right meow!] [31merror[39m: Error: Unable to perform name enquiry - Error: Unable to perform name enquiry
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:49:11)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1

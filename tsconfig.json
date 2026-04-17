@@ -1,0 +1,22 @@
+
+{
+  "compilerOptions": {
+        "resolveJsonModule": true,
+      "target": "es2016",
+      "module": "commonjs",
+      "rootDir": "./src",
+      "outDir": "./dist",
+      "esModuleInterop": true,
+      "forceConsistentCasingInFileNames": true,
+      "strict": true,
+      "skipLibCheck": true,
+      "typeRoots" : ["./src/types", "./node_modules/@types"]
+  },
+  "paths": {
+      "*": [
+          "node_modules*",
+      "src/types/express/index.d.ts",
+      "src*.ts"
+  ]
+}
+}
