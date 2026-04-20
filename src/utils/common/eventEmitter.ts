@@ -13,7 +13,7 @@ emitter.on(
     userId,
     firstName,
     lastName,
-    middleName,
+    companyName,
     publicKey,
     privateKey,
     bankName,
@@ -21,13 +21,13 @@ emitter.on(
     phoneNumber
   }) => {
     const payload = {
-      userId: userId,
-      publicKey,
-      privateKey,
+      // userId,
+      // publicKey,
+      // privateKey,
+      companyName,
       firstName,
       lastName,
-      middleName,
-      phoneNumber
+      // phoneNumber
     };
 
     const maxRetries = 10;
@@ -48,10 +48,10 @@ emitter.on(
           }
         );
 
-        console.log({ accountResponse });
+        console.log(JSON.stringify(accountResponse, null, 2));
 
         // If success and data exists, break retry loop
-        if (accountResponse?.success && accountResponse?.data?.data) {
+        if (accountResponse?.success && accountResponse?.data?.result?.data) {
           break;
         }
 
@@ -77,14 +77,14 @@ emitter.on(
     }
 
     // Final check — if still unsuccessful after retries
-    if (!accountResponse?.success || !accountResponse?.data?.data) {
+    if (!accountResponse?.success || !accountResponse?.data?.result?.data) {
       console.log("🚫 Failed to create account after retries");
       return;
     }
 
     // Proceed to save account to DB
-    const accountData = accountResponse.data.data;
-    const fullAccountName = (accountData.accountName || `${firstName} ${lastName} ${middleName ?? ""}`).trim();
+    const accountData = accountResponse.data.result.data;
+    const fullAccountName = (accountData.accountName || `${firstName} ${lastName}`).trim();
     const bankAccountCreation = await WalletService.createAccount({
       userId,
       virtualAccountNumber: accountData.accountNumber,
@@ -103,9 +103,9 @@ emitter.on(
   }
 );
 
-emitter.on("process-withdrawal", async ({ withdrawalId }) => {
-  try {    const withdrawal = await WalletService.processWithdrawal(withdrawalId);
-    console.log("✅ Withdrawal processed:", withdrawal);
+emitter.on("process-withdrawal", async ({ withdrawal }) => {
+  try {    const result = await WalletService.processWithdrawal(withdrawal);
+    console.log("✅ Withdrawal processed:", result);
   } catch (error) {
     console.error("❌ Error processing withdrawal:", error);
   }

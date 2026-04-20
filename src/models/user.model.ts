@@ -4,11 +4,11 @@ export interface IUser extends Document {
   firstName: string;
   lastName: string;
   email: string;
-  phoneNumber: string;
+  phoneNumber?: string;
 
   password: string;
 
-  referralCode: string;
+  referralCode?: string;
   referredBy?: string;
 
   role: "user" | "admin";
@@ -29,6 +29,8 @@ export interface IUser extends Document {
   averageScore?: number;
 
   currentStreak?: number;
+  publicKey?: string;
+  privateKey?: string;
 
   lastActivityDate?: Date;
   lastActiveAt?: Date;
@@ -63,17 +65,19 @@ const userSchema = new Schema<IUser>(
     lastName: { type: String, required: true },
 
     email: { type: String, required: true, unique: true },
-    phoneNumber: { type: String, required: true },
+    phoneNumber: { type: String, required: false },
 
     password: { type: String, required: true },
 
-    referralCode: { type: String, required: true, unique: true },
+    referralCode: { type: String },
     referredBy: { type: String },
 
     role: { type: String, enum: ["user", "admin"], default: "user" },
 
     isEmailVerified: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+    publicKey: { type: String },
+    privateKey: { type: String }, 
 
     authId: { type: String, unique: true },
 

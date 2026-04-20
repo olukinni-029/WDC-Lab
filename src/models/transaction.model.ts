@@ -22,6 +22,25 @@ export interface IWalletTransaction extends Document {
   sessionID?: string;
   fundingMethod?: string;
   status: TransactionStatus;
+   bankResponse?: {
+    responseCode?: string;
+    sessionID?: string;
+    transactionId?: string;
+    channelCode?: number;
+    destinationInstitutionCode?: string;
+    beneficiaryAccountName?: string;
+    beneficiaryAccountNumber?: string;
+    beneficiaryKYCLevel?: string;
+    beneficiaryBankVerificationNumber?: string;
+    originatorAccountName?: string;
+    originatorAccountNumber?: string;
+    originatorBankVerificationNumber?: string;
+    originatorKYCLevel?: string;
+    transactionLocation?: string;
+    narration?: string;
+    paymentReference?: string;
+    amount?: number;
+  };
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -81,6 +100,25 @@ const walletTransactionSchema = new Schema<IWalletTransaction>(
     },
     sessionID: {
       type: String,
+    },
+    bankResponse: {
+      responseCode: { type: String },
+      sessionID: { type: String },
+      transactionId: { type: String },
+      channelCode: { type: Number },
+      destinationInstitutionCode: { type: String },
+      beneficiaryAccountName: { type: String },
+      beneficiaryAccountNumber: { type: String },
+      beneficiaryKYCLevel: { type: String },
+      beneficiaryBankVerificationNumber: { type: String },
+      originatorAccountName: { type: String },
+      originatorAccountNumber: { type: String },
+      originatorBankVerificationNumber: { type: String },
+      originatorKYCLevel: { type: String },
+      transactionLocation: { type: String },
+      narration: { type: String },
+      paymentReference: { type: String },
+      amount: { type: Number },
     },
   },
   {

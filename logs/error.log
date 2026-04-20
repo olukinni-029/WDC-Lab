@@ -100,3 +100,113 @@
     at Generator.next (<anonymous>)
     at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
     at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-17T10:46:59.928Z [right meow!] [31merror[39m: read ECONNRESET
+2026-04-17T10:46:59.932Z [right meow!] [31merror[39m: Error: read ECONNRESET - Error: read ECONNRESET
+    at AxiosError.from (C:\Users\USER\Desktop\WDC_Lab\node_modules\axios\lib\core\AxiosError.js:7:24)
+    at ClientRequest.handleRequestError (C:\Users\USER\Desktop\WDC_Lab\node_modules\axios\lib\adapters\http.js:871:27)
+    at ClientRequest.emit (node:events:508:28)
+    at ClientRequest.emit (node:domain:489:12)
+    at emitErrorEvent (node:_http_client:107:11)
+    at TLSSocket.socketErrorListener (node:_http_client:574:5)
+    at TLSSocket.emit (node:events:508:28)
+    at TLSSocket.emit (node:domain:489:12)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-17T10:47:36.984Z [right meow!] [31merror[39m: read ECONNRESET
+2026-04-17T10:47:36.985Z [right meow!] [31merror[39m: Error: read ECONNRESET - Error: read ECONNRESET
+    at AxiosError.from (C:\Users\USER\Desktop\WDC_Lab\node_modules\axios\lib\core\AxiosError.js:7:24)
+    at ClientRequest.handleRequestError (C:\Users\USER\Desktop\WDC_Lab\node_modules\axios\lib\adapters\http.js:871:27)
+    at ClientRequest.emit (node:events:508:28)
+    at ClientRequest.emit (node:domain:489:12)
+    at emitErrorEvent (node:_http_client:107:11)
+    at TLSSocket.socketErrorListener (node:_http_client:574:5)
+    at TLSSocket.emit (node:events:508:28)
+    at TLSSocket.emit (node:domain:489:12)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3) - /api/v1/name-enquiry - POST - ::ffff:127.0.0.1
+2026-04-17T11:15:10.047Z [right meow!] [31merror[39m: Cannot read properties of undefined (reading 'id')
+2026-04-17T11:15:10.054Z [right meow!] [31merror[39m: Error: Cannot read properties of undefined (reading 'id') - TypeError: Cannot read properties of undefined (reading 'id')
+    at C:\Users\USER\Desktop\WDC_Lab\src\controller\wallet_controller.ts:15:33
+    at Generator.next (<anonymous>)
+    at C:\Users\USER\Desktop\WDC_Lab\src\controller\wallet_controller.ts:8:71
+    at new Promise (<anonymous>)
+    at __awaiter (C:\Users\USER\Desktop\WDC_Lab\src\controller\wallet_controller.ts:4:12)
+    at C:\Users\USER\Desktop\WDC_Lab\src\controller\wallet_controller.ts:14:71
+    at C:\Users\USER\Desktop\WDC_Lab\src\utils\common\asyncHandler.ts:8:13
+    at Generator.next (<anonymous>)
+    at C:\Users\USER\Desktop\WDC_Lab\src\utils\common\asyncHandler.ts:8:71
+    at new Promise (<anonymous>) - /api/v1/create-account - POST - ::1
+2026-04-17T12:15:59.075Z [right meow!] [31merror[39m: User validation failed: referralCode: Path `referralCode` is required., phoneNumber: Path `phoneNumber` is required.
+2026-04-17T12:15:59.087Z [right meow!] [31merror[39m: Error: User validation failed: referralCode: Path `referralCode` is required., phoneNumber: Path `phoneNumber` is required. - ValidationError: User validation failed: referralCode: Path `referralCode` is required., phoneNumber: Path `phoneNumber` is required.
+    at model.Document.invalidate (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongoose\lib\document.js:3381:32)
+    at C:\Users\USER\Desktop\WDC_Lab\node_modules\mongoose\lib\document.js:3142:17
+    at C:\Users\USER\Desktop\WDC_Lab\node_modules\mongoose\lib\schemaType.js:1446:9
+    at processTicksAndRejections (node:internal/process/task_queues:85:11) - /api/v1/register - POST - ::1
+2026-04-17T12:18:38.376Z [right meow!] [31merror[39m: secretOrPrivateKey must have a value
+2026-04-17T12:18:38.386Z [right meow!] [31merror[39m: Error: secretOrPrivateKey must have a value - Error: secretOrPrivateKey must have a value
+    at Object.module.exports [as sign] (C:\Users\USER\Desktop\WDC_Lab\node_modules\jsonwebtoken\sign.js:111:20)
+    at generateToken (C:\Users\USER\Desktop\WDC_Lab\src\utils\hashes\jwthandler.ts:11:14)
+    at C:\Users\USER\Desktop\WDC_Lab\src\controller\wallet_controller.ts:42:40
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\controller\wallet_controller.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/register - POST - ::1
+2026-04-17T12:20:48.904Z [right meow!] [31merror[39m: secretOrPrivateKey must have a value
+2026-04-17T12:20:48.906Z [right meow!] [31merror[39m: Error: secretOrPrivateKey must have a value - Error: secretOrPrivateKey must have a value
+    at Object.module.exports [as sign] (C:\Users\USER\Desktop\WDC_Lab\node_modules\jsonwebtoken\sign.js:111:20)
+    at generateToken (C:\Users\USER\Desktop\WDC_Lab\src\utils\hashes\jwthandler.ts:11:14)
+    at C:\Users\USER\Desktop\WDC_Lab\src\controller\wallet_controller.ts:89:42
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\controller\wallet_controller.ts:5:58) - /api/v1/login - POST - ::1
+2026-04-17T12:23:04.772Z [right meow!] [31merror[39m: E11000 duplicate key error collection: wdc_lab-dev.users index: referralCode_1 dup key: { referralCode: null }
+2026-04-17T12:23:04.881Z [right meow!] [31merror[39m: Error: E11000 duplicate key error collection: wdc_lab-dev.users index: referralCode_1 dup key: { referralCode: null } - MongoServerError: E11000 duplicate key error collection: wdc_lab-dev.users index: referralCode_1 dup key: { referralCode: null }
+    at InsertOneOperation.handleOk (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\operations\insert.ts:79:13)
+    at tryOperation (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\operations\execute_operation.ts:290:26)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async executeOperation (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\operations\execute_operation.ts:119:12)
+    at async Collection.insertOne (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\collection.ts:294:12) - /api/v1/register - POST - ::1
+2026-04-17T12:30:31.386Z [right meow!] [31merror[39m: E11000 duplicate key error collection: wdc_lab-dev.users index: authId_1 dup key: { authId: null }
+2026-04-17T12:30:31.389Z [right meow!] [31merror[39m: Error: E11000 duplicate key error collection: wdc_lab-dev.users index: authId_1 dup key: { authId: null } - MongoServerError: E11000 duplicate key error collection: wdc_lab-dev.users index: authId_1 dup key: { authId: null }
+    at InsertOneOperation.handleOk (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\operations\insert.ts:79:13)
+    at tryOperation (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\operations\execute_operation.ts:290:26)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async executeOperation (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\operations\execute_operation.ts:119:12)
+    at async Collection.insertOne (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\collection.ts:294:12) - /api/v1/register - POST - ::1
+2026-04-17T12:36:05.648Z [right meow!] [31merror[39m: Virtual wallet not found
+2026-04-17T12:36:05.658Z [right meow!] [31merror[39m: Error: Virtual wallet not found - Error: Virtual wallet not found
+    at WalletService.<anonymous> (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:206:19)
+    at Generator.next (<anonymous>)
+    at fulfilled (C:\Users\USER\Desktop\WDC_Lab\src\services\wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5) - /api/v1/create-account - POST - ::1
+2026-04-17T13:00:20.658Z [right meow!] [31merror[39m: Transaction numbers are only allowed on a replica set member or mongos
+2026-04-17T13:00:21.356Z [right meow!] [31merror[39m: Error: Transaction numbers are only allowed on a replica set member or mongos - MongoServerError: Transaction numbers are only allowed on a replica set member or mongos
+    at Connection.sendCommand (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\cmap\connection.ts:559:17)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Connection.command (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\cmap\connection.ts:633:22)
+    at async Server.command (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\sdam\server.ts:350:21)
+    at async tryOperation (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\operations\execute_operation.ts:289:24)
+    at async executeOperation (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\operations\execute_operation.ts:119:12)
+    at async FindCursor._initialize (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\cursor\find_cursor.ts:92:22)
+    at async FindCursor.cursorInit (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\cursor\abstract_cursor.ts:949:21)
+    at async FindCursor.fetchBatch (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\cursor\abstract_cursor.ts:987:7)
+    at async FindCursor.next (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\cursor\abstract_cursor.ts:608:9) - /api/v1/request-withdrawal - POST - ::1
+2026-04-17T13:43:33.044Z [right meow!] [31merror[39m: Error: MongoServerError: bad auth : authentication failed
+2026-04-17T14:04:06.394Z [right meow!] [31merror[39m: E11000 duplicate key error collection: WDC_Lab.users index: referralCode_1 dup key: { referralCode: null }
+2026-04-17T14:04:06.591Z [right meow!] [31merror[39m: Error: E11000 duplicate key error collection: WDC_Lab.users index: referralCode_1 dup key: { referralCode: null } - MongoServerError: E11000 duplicate key error collection: WDC_Lab.users index: referralCode_1 dup key: { referralCode: null }
+    at InsertOneOperation.handleOk (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\operations\insert.ts:79:13)
+    at tryOperation (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\operations\execute_operation.ts:290:26)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async executeOperation (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\operations\execute_operation.ts:119:12)
+    at async Collection.insertOne (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\collection.ts:294:12) - /api/v1/register - POST - ::1
+2026-04-18T03:14:40.755Z [right meow!] [31merror[39m: E11000 duplicate key error collection: WDC_Lab.users index: referralCode_1 dup key: { referralCode: null }
+2026-04-18T03:14:40.858Z [right meow!] [31merror[39m: Error: E11000 duplicate key error collection: WDC_Lab.users index: referralCode_1 dup key: { referralCode: null } - MongoServerError: E11000 duplicate key error collection: WDC_Lab.users index: referralCode_1 dup key: { referralCode: null }
+    at InsertOneOperation.handleOk (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\operations\insert.ts:79:13)
+    at tryOperation (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\operations\execute_operation.ts:290:26)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async executeOperation (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\operations\execute_operation.ts:119:12)
+    at async Collection.insertOne (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongodb\src\collection.ts:294:12) - /api/v1/register - POST - ::1
+2026-04-18T03:34:26.026Z [right meow!] [31merror[39m: WalletTransaction validation failed: fundingMethod: `` is not a valid enum value for path `fundingMethod`.
+2026-04-18T03:34:26.156Z [right meow!] [31merror[39m: Error: WalletTransaction validation failed: fundingMethod: `` is not a valid enum value for path `fundingMethod`. - ValidationError: WalletTransaction validation failed: fundingMethod: `` is not a valid enum value for path `fundingMethod`.
+    at model.Document.invalidate (C:\Users\USER\Desktop\WDC_Lab\node_modules\mongoose\lib\document.js:3381:32)
+    at C:\Users\USER\Desktop\WDC_Lab\node_modules\mongoose\lib\document.js:3142:17
+    at C:\Users\USER\Desktop\WDC_Lab\node_modules\mongoose\lib\schemaType.js:1446:9
+    at processTicksAndRejections (node:internal/process/task_queues:85:11) - /api/v1/request-withdrawal - POST - ::1
