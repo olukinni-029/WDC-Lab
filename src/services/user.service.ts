@@ -1,7 +1,5 @@
 import { IUser, UserModel } from "../models/user.model";
 
-
-
 export class UserService {
     static async findUserById(userId: string): Promise<IUser | null> {
         return UserModel.findById(userId);

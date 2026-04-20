@@ -4,34 +4,128 @@ import asyncHandler from "../utils/common/asyncHandler";
 import { errorResponse, successResponse } from "../utils/serverresponse/successresponse";
 import { UserService } from "../services/user.service";
 import emitter from "../utils/common/eventEmitter";
-import { generateRsaKeyPairAsync } from "../utils/common/generateKey";
-import logger from "../utils/logger";
 import { restClientWithHeaders } from "../utils/common/restclient";
-import { maskValue } from "../utils/helper";
-import { redisClient } from "../utils/redis";
-import { setRefreshTokenCookie, setSessionTokenCookie } from "../utils/hashes/cookies";
-import { generateToken } from "../utils/hashes/jwthandler";
-import { compare, hash } from "../utils/hashes/hasher";
-import { decryptPayloadFromSingleField, encryptPayloadToSingleField, getPartnerWithKey } from "../utils/common/encryptor";
+import { LogService } from "../services/systemlogs.service";
+import { WalletHistoryService } from "../services/wallethistory.service";
+import { WalletTransactionService } from "../services/wallettransaction.service";
+import { getPagedAndFilteredData, IPaginationInfo } from "../utils/paginationhandler";
+import { WalletTransactionModel } from "../models/transaction.model";
+import WalletHistory from "../models/wallet_history.model";
+import { encryptPayloadToSingleField, getPartnerWithKey } from "../utils/common/encryptor";
+import { generateRsaKeyPairAsync, headers } from "../utils/helper";
 
-
-let headers = {
-    "x-api-key": process.env.WDC_API_KEY as string,
-    "merchant-id": process.env.MERCHANTID as string,
-    "Content-Type": "application/json",
-};
 
 export const WalletController = {
 
-
     webhook: asyncHandler(async (req: Request, res: Response) => {
+        const data = req.body?.payload;
 
-        const data = req.body.payload;
-        console.log(data);
+        if (!data?.eventType) {
+            return res.status(400).send("Invalid payload");
+        }
+
+        console.log("Webhook received:", data.eventType);
+
+        switch (data.eventType) {
+            case "VIRTUAL_ACCOUNT_CREATE_SUCCESS": {
+                const wallet = await WalletService.createWallet(data);
+
+                await LogService.createLog({
+                    eventType: data.eventType,
+                    identifier: "PARTNER_VA",
+                    userType: "PARTNER",
+                    request: data,
+                    response: wallet,
+                });
+
+                break;
+            }
+
+            case "INFLOW_PAYMENT_SUCCESS": {
+                const basePayload = {
+                    transactionId: data.referenceID,
+                    sessionId: data.sessionId,
+                    paymentReference: data.paymentReference,
+                    amount: Number(data.amount),
+                    beneficiaryAccountNumber: data.beneficiaryAccountNumber,
+                    beneficiaryAccountName: data.beneficiaryAccountName,
+                    originatingAccountName: data.originatingAccountName,
+                    originatingAccountNumber: data.originatingAccountNumber,
+                    publishers: data.publishers,
+                };
+
+                const updateWallet = await WalletService.updateBalance(
+                    data.beneficiaryAccountNumber,
+                    basePayload.amount,
+                    "credit",
+                );
+
+                if (!updateWallet) {
+                    await LogService.createLog({
+                        eventType: data.eventType,
+                        identifier: "INFLOW_WEBHOOK",
+                        userType: "SYSTEM",
+                        request: data,
+                        response: basePayload,
+                        ip: req.ip,
+                        status: "FAILED",
+                    });
+
+                    break;
+                }
+
+                await Promise.all([
+                    LogService.createLog({
+                        eventType: data.eventType,
+                        identifier: "INFLOW_WEBHOOK",
+                        userType: "SYSTEM",
+                        request: data,
+                        response: { received: true },
+                        ip: req.ip,
+                        status: "SUCCESS",
+                    }),
+
+                    WalletHistoryService.createByAccountNumber({
+                        accountNumber: data.beneficiaryAccountNumber,
+                        amount: basePayload.amount,
+                        transactionType: "INFLOW",
+                        description: "Inflow payment received",
+                        userId: data.userId,
+                        owner: "WDC Digital Centre",
+                        transactionId: data.referenceID,
+                        channel: "INFLOW",
+                        metadata: data,
+                    }),
+
+
+                    WalletTransactionService.create({
+                        walletId: data.beneficiaryAccountNumber,
+                        userId: data.benefificiaryAccountNumber,
+                        transactionType: "credit",
+                        amount: basePayload.amount,
+                        description: data?.narration ?? "TRANSFER",
+                        referenceTransactionId: data.referenceID,
+                        transactionId: data.referenceID,
+                        fundingMethod: "BANK_TRANSFER",
+                        status: "completed",
+                        bankResponse: {}
+                    }),
+
+                ]);
+
+                break;
+            }
+
+            default:
+                console.log("Unhandled event type:", data.eventType);
+        }
+
         return res.sendStatus(200);
     }),
 
 
+
+    // NOTE: on success please change the payment status for the signup fee to true
     signUpFee: asyncHandler(async (req: Request, res: Response) => {
         const url = process.env.SUPPLY_BASE as string + "partners/dynamic/account";
         const { amount, firstName, lastName } = req.body;
@@ -42,9 +136,7 @@ export const WalletController = {
         }
 
         const call = await restClientWithHeaders("POST", url, payload, headers);
-
         if (!call) return errorResponse(res, "error creating account", 400)
-        // NOTE: on success please change the payment status for the signup fee to true
 
         if (call.data.result.responseCode != "00") {
             return errorResponse(res, "error creating account, please retry", 400)
@@ -56,46 +148,46 @@ export const WalletController = {
     }),
 
 
-    createAccount: asyncHandler(async (req: Request, res: Response) => {
-        const userId = req.user.id;
-
-        const user = await UserService.findUserById(userId);
-        if (!user) {
-            return errorResponse(res, "User not found", 404);
-        }
-
-        const existingAccount = await WalletService.findByUserId(
-            userId.toString(),
-        );
-        if (existingAccount) {
-            return successResponse(
-                res,
-                existingAccount,
-                "Parallex account already exists",
-            );
-        }
-
-        const { publicKey, privateKey } = await generateRsaKeyPairAsync();
-
-        emitter.emit("Create_Virtual_Account", {
-            userId: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            companyName: "WDCLAB",
-            publicKey,
-            privateKey,
-            bankName: "Parallex Bank",
-            bankCode: "000030",
-            phoneNumber: user.phoneNumber
-        });
-
-        return successResponse(
-            res,
-            {},
-            "Parallex account created and linked successfully",
-        );
-    }),
-
+    // createAccount: asyncHandler(async (req: Request, res: Response) => {
+    //     const userId = req.user.id;
+    //
+    //     const user = await UserService.findUserById(userId);
+    //     if (!user) {
+    //         return errorResponse(res, "User not found", 404);
+    //     }
+    //
+    //     const existingAccount = await WalletService.findByUserId(
+    //         userId.toString(),
+    //     );
+    //     if (existingAccount) {
+    //         return successResponse(
+    //             res,
+    //             existingAccount,
+    //             "Parallex account already exists",
+    //         );
+    //     }
+    //
+    //     const { publicKey, privateKey } = await generateRsaKeyPairAsync();
+    //
+    //     emitter.emit("Create_Virtual_Account", {
+    //         userId: user._id,
+    //         firstName: user.firstName,
+    //         lastName: user.lastName,
+    //         companyName: "WDCLAB",
+    //         publicKey,
+    //         privateKey,
+    //         bankName: "Parallex Bank",
+    //         bankCode: "000030",
+    //         phoneNumber: user.phoneNumber
+    //     });
+    //
+    //     return successResponse(
+    //         res,
+    //         {},
+    //         "Parallex account created and linked successfully",
+    //     );
+    // }),
+    //
     getUservirtualAccount: asyncHandler(async (req: Request, res: Response) => {
         const userId = req.user.id;
         const user = await UserService.findUserById(userId);
@@ -127,201 +219,220 @@ export const WalletController = {
         return successResponse(res, response.data, "Name enquiry successful");
     }),
 
-    requestWithdrawal: asyncHandler(async (req: Request, res: Response) => {
-        const { merchantId, email, secretKEy } = req.user;
-        const {
-            amount,
-            beneficiaryAccountName,
-            beneficiaryAccountNumber,
-            destinationInstitutionCode,
-            nameEnquiryRef,
-            posReference,
-        } = req.body;
+    transfer: asyncHandler(async (req: Request, res: Response) => {
+        const { originatorAccountNumber, data } = req.body;
 
-        // const withdrawal = await WalletService.createWithdrawalRequest(user._id.toString(), amount, beneficiaryAccountName,
-        //     beneficiaryAccountNumber,
-        //     destinationInstitutionCode,
-        //     nameEnquiryRef,
-        //     posReference,);
-        // if (!withdrawal) {
-        //     return errorResponse(res, "Withdrawal request failed", 400);
-        // }
+
+        const decrypt = await restClientWithHeaders(
+            "POST",
+            process.env.SUPPLY_BASE as string + "partners/decrypt",
+            {
+                data,
+            },
+            headers
+        );
+
+        if (!decrypt.data?.result) {
+            return errorResponse(res, "internal error", 404);
+        }
+
+        const wallet = await WalletService.findByAccountNumber(originatorAccountNumber);
+        if (!wallet) return errorResponse(res, "wallet not found", 404);
+
+        const theAmount = Number(decrypt?.data?.amount);
+        if (wallet.availableBalance < Number(theAmount)) {
+            return errorResponse(res, "insufficient balance", 400);
+        }
+
+
+        const walletUpdate = await WalletService.updateBalance(
+            originatorAccountNumber, // this is the customer's account number
+            theAmount,
+            "debit",
+        );
+
+        if (!walletUpdate) {
+            return errorResponse(res, "error updating wallet", 400);
+        }
+
+        const url = process.env.SUPPLY_BASE + "partners/transfer";
+
+        const response = await restClientWithHeaders("POST", url, { data }, headers);
+        const result = response?.data?.result;
+
+        if (!result || result.responseCode !== "200") {
+            await Promise.all([
+                WalletTransactionService.create({
+                    walletId: originatorAccountNumber,
+                    userId: originatorAccountNumber,
+                    transactionType: "debit",
+                    amount: theAmount,
+                    description: "TRANSFER",
+                    referenceTransactionId: "N/A",
+                    transactionId: result.transactionId,
+                    fundingMethod: "BANK_TRANSFER",
+                    status: "failed",
+                    bankResponse: {
+                    },
+                }),
+
+                LogService.createLog({
+                    eventType: "OUTWARD_TRANSFER",
+                    identifier: "OUTWARD_TRANSFER",
+                    userType: "SYSTEM",
+                    request: req.body,
+                    response: response?.data,
+                    ip: req.ip,
+                    status: "FAILED",
+                })
+            ])
+            return errorResponse(res, "transfer failed", 400);
+        }
+
+        await Promise.all([
+            WalletTransactionService.create({
+                walletId: originatorAccountNumber,
+                userId: originatorAccountNumber,
+                transactionType: "debit",
+                amount: theAmount,
+                description: "TRANSFER",
+                referenceTransactionId: result.paymentReference,
+                transactionId: result.transactionId,
+                fundingMethod: "BANK_TRANSFER",
+                status: "completed",
+                bankResponse: {
+                    responseCode: result.responseCode,
+                    sessionID: result.sessionID,
+                    transactionId: result.transactionId,
+                    channelCode: result.channelCode,
+                    destinationInstitutionCode: result.destinationInstitutionCode,
+                    beneficiaryAccountName: result.beneficiaryAccountName,
+                    beneficiaryAccountNumber: result.beneficiaryAccountNumber,
+                    beneficiaryKYCLevel: result.beneficiaryKYCLevel,
+                    beneficiaryBankVerificationNumber: result.beneficiaryBankVerificationNumber,
+                    originatorAccountName: result.originatorAccountName,
+                    originatorAccountNumber: result.originatorAccountNumber,
+                    originatorBankVerificationNumber: result.originatorBankVerificationNumber,
+                    originatorKYCLevel: result.originatorKYCLevel,
+                    transactionLocation: result.transactionLocation,
+                    narration: result.narration,
+                    paymentReference: result.paymentReference,
+                    amount: result.amount,
+                },
+            }),
+            WalletHistoryService.createByAccountNumber({
+                accountNumber: originatorAccountNumber,
+                amount: theAmount,
+                transactionType: "TRANSFER",
+                description: result?.narration,
+                userId: originatorAccountNumber,
+                owner: "WDC Digital Centre",
+                transactionId: result.transactionId,
+                channel: "TRANSFER",
+                metadata: response,
+            }),
+        ])
 
         return successResponse(res, {}, "Withdrawal request submitted");
     }),
 
+    getAllUserWalletHistory: asyncHandler(async (req: Request, res: Response) => {
 
-    handleWithdrawalWebhook: asyncHandler(async (req: Request, res: Response) => {
+        const acccountNumber = req.body.accountNumber;
+        const wallet = await WalletService.findByAccountNumber(acccountNumber);
 
-        const signature = req.headers["x-parallex-signature"];
-
-        /**
-         * ✅ VERIFY WEBHOOK SOURCE
-         */
-        if (signature !== process.env.PARALEX_WEBHOOK_SECRET) {
-
-            logger.warn("Invalid webhook signature");
-
-            return errorResponse(res, "Unauthorized webhook source", 401);
-
+        if (!wallet) {
+            return errorResponse(res, "wallet not found", 404);
         }
-
-        const { transferRef, status, message } = req.body;
-
-        if (!transferRef || !status) {
-
-            logger.warn("Invalid webhook payload:", req.body);
-
-            return errorResponse(
-                res,
-                "Missing required fields: transferRef, status",
-                400
-            );
-
-        }
-
-        try {
-
-            const result = await WalletService.processWithdrawalWebhook({
-                transferRef,
-                status,
-                message,
-            });
-
-            return successResponse(
-                res,
-                {
-                    transferRef,
-                    processed: true
-                },
-                "Webhook processed successfully"
-            );
-
-        } catch (error) {
-
-            logger.error("Webhook processing error:", error);
-
-            /**
-             * Important: still return 200
-             * so bank does not retry forever
-             */
-
-            return successResponse(
-                res,
-                {
-                    transferRef,
-                    processed: false,
-                    error: error instanceof Error ? error.message : "Unknown error"
-                },
-                "Webhook received but processing failed"
-            );
-
-        }
-
-    }),
-
-    creditWalletWebhook: asyncHandler(async (req: Request, res: Response) => {
 
         const {
-            accountNumber,
-            amount,
-            sessionId,
-            originatorName,
-            originatorAccountNumber
-        } = req.body;
+            page,
+            limit,
+        } = req.query;
 
-        const result = await WalletService.creditWallet({
-            accountNumber,
-            amount,
-            sessionId,
-            originatorName,
-            originatorAccountNumber
-        });
+        const paginationInfo: IPaginationInfo = {
+            page: parseInt(page as string, 10) || 1,
+            limit: parseInt(limit as string, 10) || 10,
+        };
 
-        return res.status(200).json({
-            success: true,
-            message: "Webhook processed",
-            data: result
-        });
+        let filter: { [key: string]: any } = {};
+        filter.accountNumber = acccountNumber;
 
-    }),
+        const result = await getPagedAndFilteredData(
+            WalletHistory,
+            filter,
+            paginationInfo,
+        );
+        const currentPage = paginationInfo.page;
+        const totalPages = Math.ceil(
+            result.paginationInfo.total! / paginationInfo.limit,
+        );
 
-    getAllUserWalletHistory: asyncHandler(async (req: Request, res: Response) => {
-        const userId = req.user.id;
-        const user = await UserService.findUserById(userId);
-        if (!user) {
-            return errorResponse(res, "User not found", 404);
-        }
-        const walletHistory = await WalletService.fetchWalletHistory({
-            owner: userId.toString(),
-        });
-        return successResponse(res, walletHistory, "User wallet history retrieved successfully");
+        const pagedInfo = {
+            page: currentPage,
+            limit: paginationInfo.limit,
+            hasPrevious: currentPage! > 1,
+            hasNext: currentPage! < totalPages,
+            total: result.paginationInfo.total,
+            totalPages,
+        };
+
+        return successResponse(
+            res,
+            { result: result.items, pagedInfo },
+            "success",
+        );
+
+
+
     }),
 
     getAllUserTransactions: asyncHandler(async (req: Request, res: Response) => {
-        const userId = req.user.id;
-        const user = await UserService.findUserById(userId);
-        if (!user) {
-            return errorResponse(res, "User not found", 404);
+        const acccountNumber = req.body.accountNumber;
+        const wallet = await WalletService.findByAccountNumber(acccountNumber);
+
+        if (!wallet) {
+            return errorResponse(res, "wallet not found", 404);
         }
-        const transactions = await WalletService.getUserTransactions({ userId: userId.toString() });
-        return successResponse(res, transactions, "User transactions retrieved successfully");
+
+        const {
+            page,
+            limit,
+        } = req.query;
+
+        const paginationInfo: IPaginationInfo = {
+            page: parseInt(page as string, 10) || 1,
+            limit: parseInt(limit as string, 10) || 10,
+        };
+
+        let filter: { [key: string]: any } = {};
+        filter.accountNumber = acccountNumber;
+
+        const result = await getPagedAndFilteredData(
+            WalletTransactionModel,
+            filter,
+            paginationInfo,
+        );
+        const currentPage = paginationInfo.page;
+        const totalPages = Math.ceil(
+            result.paginationInfo.total! / paginationInfo.limit,
+        );
+
+        const pagedInfo = {
+            page: currentPage,
+            limit: paginationInfo.limit,
+            hasPrevious: currentPage! > 1,
+            hasNext: currentPage! < totalPages,
+            total: result.paginationInfo.total,
+            totalPages,
+        };
+
+        return successResponse(
+            res,
+            { result: result.items, pagedInfo },
+            "success",
+        );
     }),
-
-    transfer: asyncHandler(
-        async (req: Request, res: Response) => {
-            const user = await getPartnerWithKey(req, res);
-            if (!user) return;
-
-            const decryptedData = decryptPayloadFromSingleField(
-                req.body.data,
-                user.privateKey as any,
-            );
-            if (!decryptedData) {
-                return errorResponse(res, "Failed to encrypt payload", 500);
-            }
-            const payload = {
-                amount: decryptedData.amount,
-                beneficiaryAccountName: decryptedData.accountName,
-                beneficiaryAccountNumber: decryptedData.accountNumber,
-                destinationInstitutionCode: decryptedData.bankCode,
-                nameEnquiryRef: decryptedData.nameEnquiryRef,
-                posReference: decryptedData.posReference,
-            };
-
-            const response = await restClientWithHeaders(
-                "POST",
-                process.env.TRANSFER as string,
-                payload,
-            );
-
-            if (!response.success) {
-                return errorResponse(
-                    res,
-                    response?.message || "Failed to disburse loan",
-                    400,
-                );
-            };
-
-            if (!response) return errorResponse(res, "internal error", 500);
-
-            const result = response?.data?.data?.result;
-            console.log({ "==========================": result });
-            if (!result) {
-                return errorResponse(res, "Invalid bank response", 500);
-            }
-
-            // Update withdrawal records
-            const isSuccess = result.responseCode === "00";
-            const status = isSuccess ? "success" : "failed";
-            await WalletService.updateWithdrawalStatus(
-                result.transactionId,
-                status,
-                result.sessionID,
-            );
-            return successResponse(res, { response }, "succes");
-        },
-    ),
 
     encryptData: asyncHandler(async (req: Request, res: Response) => {
         const user = await getPartnerWithKey(req, res);

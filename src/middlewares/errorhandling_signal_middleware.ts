@@ -19,7 +19,6 @@ export const setupErrorHandling = (server: Server): void => {
     });
   });
 
-  // Handle SIGINT and SIGTERM signals
   process.on('SIGINT', async () => {
     logger.info('SIGINT received....');
     server.close(() => {

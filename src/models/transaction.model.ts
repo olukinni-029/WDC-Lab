@@ -1,132 +1,132 @@
 import { Schema, model, Types, Document } from "mongoose";
 
 export type TransactionStatus =
-  | "pending"
-  | "completed"
-  | "failed"
-  | "reversed"
-  | "cancelled";
+    | "pending"
+    | "completed"
+    | "failed"
+    | "reversed"
+    | "cancelled";
 
 export type TransactionType = "credit" | "debit" | "adjustment";
 
 export interface IWalletTransaction extends Document {
-  walletId: Types.ObjectId;
-  userId: Types.ObjectId;
-  transactionType: TransactionType;
-  amount: number;
-  description?: string;
-  referenceTransactionId?: string;
-  responseCode?: string;
-  nameEnquiryRef?: string;
-  transactionId?: string;
-  sessionID?: string;
-  fundingMethod?: string;
-  status: TransactionStatus;
-   bankResponse?: {
+    walletId: Types.ObjectId;
+    userId: Types.ObjectId;
+    transactionType: TransactionType;
+    amount: number;
+    description?: string;
+    referenceTransactionId?: string;
     responseCode?: string;
-    sessionID?: string;
+    nameEnquiryRef?: string;
     transactionId?: string;
-    channelCode?: number;
-    destinationInstitutionCode?: string;
-    beneficiaryAccountName?: string;
-    beneficiaryAccountNumber?: string;
-    beneficiaryKYCLevel?: string;
-    beneficiaryBankVerificationNumber?: string;
-    originatorAccountName?: string;
-    originatorAccountNumber?: string;
-    originatorBankVerificationNumber?: string;
-    originatorKYCLevel?: string;
-    transactionLocation?: string;
-    narration?: string;
-    paymentReference?: string;
-    amount?: number;
-  };
-  createdAt?: Date;
-  updatedAt?: Date;
+    sessionID?: string;
+    fundingMethod?: string;
+    status: TransactionStatus;
+    bankResponse?: {
+        responseCode?: string;
+        sessionID?: string;
+        transactionId?: string;
+        channelCode?: number;
+        destinationInstitutionCode?: string;
+        beneficiaryAccountName?: string;
+        beneficiaryAccountNumber?: string;
+        beneficiaryKYCLevel?: string;
+        beneficiaryBankVerificationNumber?: string;
+        originatorAccountName?: string;
+        originatorAccountNumber?: string;
+        originatorBankVerificationNumber?: string;
+        originatorKYCLevel?: string;
+        transactionLocation?: string;
+        narration?: string;
+        paymentReference?: string;
+        amount?: number;
+    };
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 const walletTransactionSchema = new Schema<IWalletTransaction>(
-  {
-    walletId: {
-      type: Schema.Types.ObjectId,
-      ref: "Wallet",
-      required: true,
-    },
+    {
+        walletId: {
+            type: Schema.Types.ObjectId,
+            ref: "Wallet",
+            required: true,
+        },
 
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+        userId: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
 
-    transactionType: {
-      type: String,
-      enum: ["credit", "debit", "adjustment"],
-      required: true,
-    },
+        transactionType: {
+            type: String,
+            enum: ["credit", "debit", "adjustment"],
+            required: true,
+        },
 
-    fundingMethod: {
-      type: String,
-      enum: ["BANK_TRANSFER" , "PAYSTACK_CARD" , "SYSTEM_SYNC" , "MANUAL"],
-      default: "",
-    },
+        fundingMethod: {
+            type: String,
+            enum: ["BANK_TRANSFER", "PAYSTACK_CARD", "SYSTEM_SYNC", "MANUAL"],
+            default: "",
+        },
 
-    amount: {
-      type: Number,
-      required: true,
-    },
+        amount: {
+            type: Number,
+            required: true,
+        },
 
-    description: {
-      type: String,
-    },
+        description: {
+            type: String,
+        },
 
-    referenceTransactionId: {
-      type: String,
-    },
+        referenceTransactionId: {
+            type: String,
+        },
 
-    status: {
-      type: String,
-      enum: ["pending", "completed", "failed", "reversed"],
-      default: "pending",
+        status: {
+            type: String,
+            enum: ["pending", "completed", "failed", "reversed"],
+            default: "pending",
+        },
+        responseCode: {
+            type: String,
+        },
+        nameEnquiryRef: {
+            type: String,
+        },
+        transactionId: {
+            type: String,
+        },
+        sessionID: {
+            type: String,
+        },
+        bankResponse: {
+            responseCode: { type: String },
+            sessionID: { type: String },
+            transactionId: { type: String },
+            channelCode: { type: Number },
+            destinationInstitutionCode: { type: String },
+            beneficiaryAccountName: { type: String },
+            beneficiaryAccountNumber: { type: String },
+            beneficiaryKYCLevel: { type: String },
+            beneficiaryBankVerificationNumber: { type: String },
+            originatorAccountName: { type: String },
+            originatorAccountNumber: { type: String },
+            originatorBankVerificationNumber: { type: String },
+            originatorKYCLevel: { type: String },
+            transactionLocation: { type: String },
+            narration: { type: String },
+            paymentReference: { type: String },
+            amount: { type: Number },
+        },
     },
-    responseCode: {
-      type: String,
+    {
+        timestamps: true,
     },
-    nameEnquiryRef: {
-      type: String,
-    },
-    transactionId: {
-      type: String,
-    },
-    sessionID: {
-      type: String,
-    },
-    bankResponse: {
-      responseCode: { type: String },
-      sessionID: { type: String },
-      transactionId: { type: String },
-      channelCode: { type: Number },
-      destinationInstitutionCode: { type: String },
-      beneficiaryAccountName: { type: String },
-      beneficiaryAccountNumber: { type: String },
-      beneficiaryKYCLevel: { type: String },
-      beneficiaryBankVerificationNumber: { type: String },
-      originatorAccountName: { type: String },
-      originatorAccountNumber: { type: String },
-      originatorBankVerificationNumber: { type: String },
-      originatorKYCLevel: { type: String },
-      transactionLocation: { type: String },
-      narration: { type: String },
-      paymentReference: { type: String },
-      amount: { type: Number },
-    },
-  },
-  {
-    timestamps: true,
-  },
 );
 
 export const WalletTransactionModel = model<IWalletTransaction>(
-  "WalletTransaction",
-  walletTransactionSchema,
+    "WalletTransaction",
+    walletTransactionSchema,
 );
