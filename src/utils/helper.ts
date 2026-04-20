@@ -22,3 +22,19 @@ export function generateReferenceId(userId: string): string {
                      .slice(0, 11);
   return `WD-${userId}-${unique}`;
 }
+
+
+export function verifyWebhook(req: any, secret: string) {
+    const signature = req.headers["x-webhook-signature"];
+    const timestamp = req.headers["x-webhook-timestamp"];
+
+    const payload = JSON.stringify(req.body);
+
+    const expectedSignature = crypto
+        .createHmac("sha256", secret)
+        .update(payload)
+        .digest("hex");
+
+    return signature === expectedSignature;
+}
+

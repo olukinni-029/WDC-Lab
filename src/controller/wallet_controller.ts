@@ -15,95 +15,47 @@ import { compare, hash } from "../utils/hashes/hasher";
 import { decryptPayloadFromSingleField, encryptPayloadToSingleField, getPartnerWithKey } from "../utils/common/encryptor";
 
 
+let headers = {
+    "x-api-key": process.env.WDC_API_KEY as string,
+    "merchant-id": process.env.MERCHANTID as string,
+    "Content-Type": "application/json",
+};
 
 export const WalletController = {
-  registration: asyncHandler(
-    async (req: Request, res: Response) => {
-      const payload = req.body;
 
-      const checkIfExist = await UserService.findByEmail(payload.email);
 
-      if (checkIfExist) {
-        return errorResponse(res, "User details already exists", 400);
-      }
+    webhook: asyncHandler(async (req: Request, res: Response) => {
 
-      const hashedPassword = await hash(payload.password);
+        const data = req.body.payload;
+        console.log(data);
+        return res.sendStatus(200);
+    }),
 
-      const user = await UserService.createLender({
-        ...payload,
-        password: hashedPassword,
-      });
 
-      const tokenPayload = {
-        id: user._id,
-        email: payload.email,
-        role: "user",
-      };
-
-      const accessToken = generateToken(
-        tokenPayload,
-        process.env.USER_JWT_SECRET! as string,
-        "15m"
-      );
-      setSessionTokenCookie(res, accessToken);
-      const refreshToken = generateToken(
-        tokenPayload,
-        process.env.REFRESH_TOKEN_SECRET! as string,
-        "7d"
-      );
-      setRefreshTokenCookie(res, refreshToken);
-      await redisClient.set(`refreshToken:${user._id}`, refreshToken, {
-        EX: 7 * 24 * 60 * 60,
-      });
-      // remove all sensitive lender info
-      const userResponse = {
-        ...(user.toObject?.() ?? user),
-        password: user.password ? maskValue(user.password) : undefined,
-      };
-
-      return successResponse(
-        res,
-        { userResponse,accessToken,refreshToken },
-        "User successfully registered"
-      );
-    }
-  ),
-
-  login: asyncHandler(async (req: Request, res: Response) => {
-        const { password, email } = req.body;
-
-        const user = await UserService.findByEmail(email);
-        if (!user)
-            return errorResponse(res, "user email does not exist", 401);
-
-        const isMatch = await compare(password, user.password!);
-        if (!isMatch) {
-            return errorResponse(res, "invalid email or password", 401);
+    signUpFee: asyncHandler(async (req: Request, res: Response) => {
+        const url = process.env.SUPPLY_BASE as string + "partners/dynamic/account";
+        const { amount, firstName, lastName } = req.body;
+        const payload = {
+            firstName: firstName + " ." + lastName[0],
+            amount,
+            lastName: "WDC_SIGNUP_FEE",
         }
 
-        const tokenPayload = {
-            email,
-            id: user._id.toString(),
-            role: "user"
-        };
+        const call = await restClientWithHeaders("POST", url, payload, headers);
 
-        const accessToken = generateToken(
-            tokenPayload,
-            process.env.USER_JWT_SECRET! as string,
-            "1d",
-        );
+        if (!call) return errorResponse(res, "error creating account", 400)
+        // NOTE: on success please change the payment status for the signup fee to true
 
-        return successResponse(
-            res,
-            {
-                partner: {
-                    id: user._id,
-                },
-                accessToken
-            },
-            "login successful",
-        );
+        if (call.data.result.responseCode != "00") {
+            return errorResponse(res, "error creating account, please retry", 400)
+        }
+
+        const data = call?.data?.result.data;
+        return successResponse(res, data, "success")
+
     }),
+
+
     createAccount: asyncHandler(async (req: Request, res: Response) => {
         const userId = req.user.id;
 
@@ -129,7 +81,7 @@ export const WalletController = {
             userId: user._id,
             firstName: user.firstName,
             lastName: user.lastName,
-            companyName:"WDCLAB",
+            companyName: "WDCLAB",
             publicKey,
             privateKey,
             bankName: "Parallex Bank",
@@ -144,7 +96,7 @@ export const WalletController = {
         );
     }),
 
-    getUservirtualAccount:asyncHandler(async (req: Request, res: Response) => {
+    getUservirtualAccount: asyncHandler(async (req: Request, res: Response) => {
         const userId = req.user.id;
         const user = await UserService.findUserById(userId);
         if (!user) {
@@ -156,16 +108,10 @@ export const WalletController = {
         }
         return successResponse(res, account, "Virtual account retrieved successfully");
     }),
-    
+
     nameEnquiry: asyncHandler(async (req: Request, res: Response) => {
         const { bankCode, accountNumber } = req.body;
 
-        const headers = {
-            "x-api-key":
-                "02e4d8c76fae2e38117bb406a842cce07236e7dced3bc6637780a85a21b4110c",
-            "merchant-id": "TFSOQZOMZHT8LCU",
-            "Content-Type": "application/json",
-        };
 
         const response = await restClientWithHeaders(
             "POST",
@@ -182,7 +128,7 @@ export const WalletController = {
     }),
 
     requestWithdrawal: asyncHandler(async (req: Request, res: Response) => {
-        const userId = req.user.id;
+        const { merchantId, email, secretKEy } = req.user;
         const {
             amount,
             beneficiaryAccountName,
@@ -191,21 +137,17 @@ export const WalletController = {
             nameEnquiryRef,
             posReference,
         } = req.body;
-        const user = await UserService.findUserById(userId);
-        if (!user) {
-            return errorResponse(res, "User not found", 404);
-        }
-        // 
-        const withdrawal = await WalletService.createWithdrawalRequest(user._id.toString(), amount, beneficiaryAccountName,
-            beneficiaryAccountNumber,
-            destinationInstitutionCode,
-            nameEnquiryRef,
-            posReference,);
-        if (!withdrawal) {
-            return errorResponse(res, "Withdrawal request failed", 400);
-        }
 
-        return successResponse(res, withdrawal, "Withdrawal request submitted");
+        // const withdrawal = await WalletService.createWithdrawalRequest(user._id.toString(), amount, beneficiaryAccountName,
+        //     beneficiaryAccountNumber,
+        //     destinationInstitutionCode,
+        //     nameEnquiryRef,
+        //     posReference,);
+        // if (!withdrawal) {
+        //     return errorResponse(res, "Withdrawal request failed", 400);
+        // }
+
+        return successResponse(res, {}, "Withdrawal request submitted");
     }),
 
 
@@ -327,65 +269,65 @@ export const WalletController = {
     }),
 
     transfer: asyncHandler(
-    async (req: Request, res: Response) => {
-      const user = await getPartnerWithKey(req, res);
-      if (!user) return;
+        async (req: Request, res: Response) => {
+            const user = await getPartnerWithKey(req, res);
+            if (!user) return;
 
-      const decryptedData = decryptPayloadFromSingleField(
-        req.body.data,
-        user.privateKey as any,
-      );
-      if (!decryptedData) {
-        return errorResponse(res, "Failed to encrypt payload", 500);
-      }
-      const payload = {
-        amount: decryptedData.amount,
-          beneficiaryAccountName: decryptedData.accountName,
-          beneficiaryAccountNumber: decryptedData.accountNumber,
-          destinationInstitutionCode: decryptedData.bankCode,
-          nameEnquiryRef: decryptedData.nameEnquiryRef,
-          posReference: decryptedData.posReference,
-      };
+            const decryptedData = decryptPayloadFromSingleField(
+                req.body.data,
+                user.privateKey as any,
+            );
+            if (!decryptedData) {
+                return errorResponse(res, "Failed to encrypt payload", 500);
+            }
+            const payload = {
+                amount: decryptedData.amount,
+                beneficiaryAccountName: decryptedData.accountName,
+                beneficiaryAccountNumber: decryptedData.accountNumber,
+                destinationInstitutionCode: decryptedData.bankCode,
+                nameEnquiryRef: decryptedData.nameEnquiryRef,
+                posReference: decryptedData.posReference,
+            };
 
-      const response = await restClientWithHeaders(
-        "POST",
-        process.env.TRANSFER as string,
-        payload,
-      );
+            const response = await restClientWithHeaders(
+                "POST",
+                process.env.TRANSFER as string,
+                payload,
+            );
 
-      if (!response.success) {
-        return errorResponse(
-          res,
-          response?.message || "Failed to disburse loan",
-          400,
-        );
-      };
+            if (!response.success) {
+                return errorResponse(
+                    res,
+                    response?.message || "Failed to disburse loan",
+                    400,
+                );
+            };
 
-      if (!response) return errorResponse(res, "internal error", 500);
+            if (!response) return errorResponse(res, "internal error", 500);
 
-      const result = response?.data?.data?.result;
-      console.log({ "==========================": result });
-      if (!result) {
-        return errorResponse(res, "Invalid bank response", 500);
-      }
+            const result = response?.data?.data?.result;
+            console.log({ "==========================": result });
+            if (!result) {
+                return errorResponse(res, "Invalid bank response", 500);
+            }
 
-      // Update withdrawal records
-      const isSuccess = result.responseCode === "00";
-      const status = isSuccess ? "success" : "failed";
-      await WalletService.updateWithdrawalStatus(
-        result.transactionId,
-        status,
-        result.sessionID,
-      );
+            // Update withdrawal records
+            const isSuccess = result.responseCode === "00";
+            const status = isSuccess ? "success" : "failed";
+            await WalletService.updateWithdrawalStatus(
+                result.transactionId,
+                status,
+                result.sessionID,
+            );
             return successResponse(res, { response }, "succes");
-    },
-  ),
+        },
+    ),
 
-   encryptData: asyncHandler(async (req: Request, res: Response) => {
-    const user = await getPartnerWithKey(req, res);
-    if (!user) return;
-    const response = encryptPayloadToSingleField(req.body, user.publicKey as any);
-    return successResponse(res, { response: response.data }, "success");
-  }),
+    encryptData: asyncHandler(async (req: Request, res: Response) => {
+        const user = await getPartnerWithKey(req, res);
+        if (!user) return;
+        const response = encryptPayloadToSingleField(req.body, user.publicKey as any);
+        return successResponse(res, { response: response.data }, "success");
+    }),
 
 };

@@ -19,7 +19,7 @@ setupMiddleware(app);
 connectToMongoDB();
 
 app.get("/", (_req, res) => {
-  res.send("WDC Lab API is live!");
+    res.send("WDC Lab API is live!");
 });
 
 app.set("trust proxy", 1); // Only trust the first proxy
@@ -27,10 +27,10 @@ app.set("trust proxy", 1); // Only trust the first proxy
 app.disable("x-powered-by");
 
 app.use((req, res, next) => {
-  if (process.env.NODE_ENV === "production" && !req.secure) {
-    return res.redirect("https://" + req.headers.host + req.url);
-  }
-  next();
+    if (process.env.NODE_ENV === "production" && !req.secure) {
+        return res.redirect("https://" + req.headers.host + req.url);
+    }
+    next();
 });
 // 🚫 BLOCK: Common Exploits (RCE, LFI, PHPunit, ThinkPHP, etc)
 // app.use((req: Request, res: Response, next) => {
@@ -65,11 +65,11 @@ app.use((req, res, next) => {
 
 // ❌ Block unknown HTTP methods
 app.use((req, res, next) => {
-  const allowedMethods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
-  if (!allowedMethods.includes(req.method)) {
-    return res.status(405).send("Method Not Allowed");
-  }
-  next();
+    const allowedMethods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
+    if (!allowedMethods.includes(req.method)) {
+        return res.status(405).send("Method Not Allowed");
+    }
+    next();
 });
 
 // 🛡 Block malicious User-Agents and local IPs
@@ -160,11 +160,11 @@ app.use((req, res, next) => {
 // });
 
 app.use((req, res, next) => {
-  if (req.path.match(/^\/(\.env|\.git|php.*|debug|_ignition)/i)) {
-    console.log("==============================vulnerability api called....");
-    return res.status(403).send("Forbidden");
-  }
-  next();
+    if (req.path.match(/^\/(\.env|\.git|php.*|debug|_ignition)/i)) {
+        console.log("==============================vulnerability api called....");
+        return res.status(403).send("Forbidden");
+    }
+    next();
 });
 
 // app.use((req, res, next) => {
@@ -201,22 +201,19 @@ setupErrorHandlers(app);
 const PORT = process.env.PORT || 5000;
 
 const server = httpServer.listen(PORT, () => {
-  logger.info(
-    `Prometheus metrics are available at http://localhost:${PORT}/metrics`
-  );
-  logger.info(
-    `Server is live on http://localhost:${PORT} - PID: ${process.pid} - ENV: ${process.env.NODE_ENV}`
-  );
+    logger.info(
+        `Server is live on http://localhost:${PORT} - PID: ${process.pid} - ENV: ${process.env.NODE_ENV}`
+    );
 });
 
 setupErrorHandling(server);
 
 // Graceful shutdown
 const shutdown = () => {
-  server.close(() => {
-    logger.info("Server is closed");
-    process.exit(0);
-  });
+    server.close(() => {
+        logger.info("Server is closed");
+        process.exit(0);
+    });
 };
 
 process.on("SIGINT", shutdown);
