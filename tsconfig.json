@@ -1,6 +1,7 @@
 
 {
   "compilerOptions": {
+    "incremental": true,
         "resolveJsonModule": true,
       "target": "es2016",
       "module": "commonjs",
