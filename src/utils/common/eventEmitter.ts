@@ -1,7 +1,6 @@
 import EventEmitter from "events";
 import { restClientWithHeaders } from "./restclient";
-import { createPermanentVirtualAccount } from "./parallexCreation";
-import { redisClient } from "../redis";
+// import { createPermanentVirtualAccount } from "./parallexCreation";
 import { WalletService } from "../../services/wallet_service";
 import { UserService } from "../../services/user.service";
 
@@ -21,13 +20,9 @@ emitter.on(
     phoneNumber
   }) => {
     const payload = {
-      // userId,
-      // publicKey,
-      // privateKey,
       companyName,
       firstName,
       lastName,
-      // phoneNumber
     };
 
     const maxRetries = 10;
@@ -36,7 +31,7 @@ emitter.on(
 
     while (attempt < maxRetries) {
       attempt++;
-      console.log(`🔁 Attempt ${attempt} to create wallet...`);
+      console.log(`Attempt ${attempt} to create wallet...`);
 
       try {
         accountResponse = await restClientWithHeaders(
@@ -48,26 +43,22 @@ emitter.on(
           }
         );
 
-        console.log(JSON.stringify(accountResponse, null, 2));
-
-        // If success and data exists, break retry loop
         if (accountResponse?.success && accountResponse?.data?.result?.data) {
           break;
         }
 
-        // Stop retrying if it's not a timeout issue
         if (
           !accountResponse ||
           accountResponse.message !==
           "External service timed out.. Please try again later."
         ) {
-          console.log("❌ Not a timeout error, skipping retry.");
+          console.log("Not a timeout error, skipping retry.");
           break;
         }
 
-        console.log("⚠️ Timeout occurred, retrying...");
+        console.log("Timeout occurred, retrying...");
       } catch (err) {
-        console.error("❌ Exception during wallet creation:", err);
+        console.error("Exception during wallet creation:", err);
       }
 
       if (attempt < maxRetries) {
@@ -78,7 +69,7 @@ emitter.on(
 
     // Final check — if still unsuccessful after retries
     if (!accountResponse?.success || !accountResponse?.data?.result?.data) {
-      console.log("🚫 Failed to create account after retries");
+      console.log("Failed to create account after retries");
       return;
     }
 
@@ -99,15 +90,15 @@ emitter.on(
       bankName: bankAccountCreation.bankName,
     });
 
-    console.log("✅ Bank account created:", bankAccountCreation);//Ask for webhook url
+    console.log("Bank account created:", bankAccountCreation);//Ask for webhook url
   }
 );
 
 emitter.on("process-withdrawal", async ({ withdrawal }) => {
   try {    const result = await WalletService.processWithdrawal(withdrawal);
-    console.log("✅ Withdrawal processed:", result);
+    console.log("Withdrawal processed:", result);
   } catch (error) {
-    console.error("❌ Error processing withdrawal:", error);
+    console.error("Error processing withdrawal:", error);
   }
 });
 
