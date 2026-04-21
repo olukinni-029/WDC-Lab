@@ -137,7 +137,7 @@ export const WalletController = {
 
         const call = await restClientWithHeaders("POST", url, payload, headers);
         if (!call) return errorResponse(res, "error creating account", 400)
-
+        console.log(call);
         if (call.data.result.responseCode != "00") {
             return errorResponse(res, "error creating account, please retry", 400)
         }
