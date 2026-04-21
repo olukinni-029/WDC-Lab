@@ -19,6 +19,9 @@ export const WalletController = {
 
     webhook: asyncHandler(async (req: Request, res: Response) => {
         const data = req.body?.payload;
+        console.log("=====================================")
+        console.log({data})
+        console.log("=====================================")
 
         if (!data?.eventType) {
             return res.status(400).send("Invalid payload");
