@@ -25,15 +25,7 @@ export const WalletController = {
         }
 
         switch (eventType) {
-
             case "OUTGOING_PAYMENT_SUCCESS": {
-                console.log("========================================>>>>>>>>")
-                console.log("========================================>>>>>>>>")
-                console.log(eventType)
-                console.log(data)
-                console.log("========================================>>>>>>>>")
-                console.log("========================================>>>>>>>>")
-
                 await LogService.createLog({
                     eventType,
                     identifier: "PARTNER_OUTGOING_TRANSFER",
@@ -180,46 +172,6 @@ export const WalletController = {
     }),
 
 
-    // createAccount: asyncHandler(async (req: Request, res: Response) => {
-    //     const userId = req.user.id;
-    //
-    //     const user = await UserService.findUserById(userId);
-    //     if (!user) {
-    //         return errorResponse(res, "User not found", 404);
-    //     }
-    //
-    //     const existingAccount = await WalletService.findByUserId(
-    //         userId.toString(),
-    //     );
-    //     if (existingAccount) {
-    //         return successResponse(
-    //             res,
-    //             existingAccount,
-    //             "Parallex account already exists",
-    //         );
-    //     }
-    //
-    //     const { publicKey, privateKey } = await generateRsaKeyPairAsync();
-    //
-    //     emitter.emit("Create_Virtual_Account", {
-    //         userId: user._id,
-    //         firstName: user.firstName,
-    //         lastName: user.lastName,
-    //         companyName: "WDCLAB",
-    //         publicKey,
-    //         privateKey,
-    //         bankName: "Parallex Bank",
-    //         bankCode: "000030",
-    //         phoneNumber: user.phoneNumber
-    //     });
-    //
-    //     return successResponse(
-    //         res,
-    //         {},
-    //         "Parallex account created and linked successfully",
-    //     );
-    // }),
-    //
     getUservirtualAccount: asyncHandler(async (req: Request, res: Response) => {
         const userId = req.user.id;
         const user = await UserService.findUserById(userId);
@@ -235,11 +187,10 @@ export const WalletController = {
 
     nameEnquiry: asyncHandler(async (req: Request, res: Response) => {
         const { bankCode, accountNumber } = req.body;
-
-
+        const url = process.env.SUPPLY_BASE + "partners/nameenquiry";
         const response = await restClientWithHeaders(
             "POST",
-            "https://d9o8urztf23tc.cloudfront.net/api/v1/partners/nameenquiry",
+            url,
             {
                 accountNumber,
                 bankCode,

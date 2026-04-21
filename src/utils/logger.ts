@@ -11,8 +11,7 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
   return `${timestamp} [${label}] ${level}: ${formattedMessage}`;
 });
 
-const logger = winston.createLogger({
-  format: combine(
+const logger = winston.createLogger({ format: combine(
     colorize(),
     label({ label: 'right meow!' }),
     timestamp(),

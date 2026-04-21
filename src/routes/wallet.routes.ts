@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { WalletController } from "../controller/wallet_controller";
-import { checkApiKey } from "../middlewares/Auth";
+import { checkApiKey } from "../middlewares/auth";
 
 const walletRouter = Router();
 
