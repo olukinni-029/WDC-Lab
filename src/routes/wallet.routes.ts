@@ -4,6 +4,7 @@ import { checkApiKey } from "../middlewares/auth";
 
 const walletRouter = Router();
 
+//TODO: add joi validation
 walletRouter.post("/signupfee", checkApiKey, WalletController.signUpFee);
 walletRouter.post("/webhook", WalletController.webhook);
 walletRouter.post("/transfer", checkApiKey, WalletController.transfer);
