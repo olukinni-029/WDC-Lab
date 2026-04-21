@@ -37,6 +37,7 @@ webhook: asyncHandler(async (req: Request, res: Response) => {
             const wallet = await WalletService.createWallet({
                 virtualAccountNumber: data?.accountNumber,
                 virtualAccountName: data?.accountName,
+                userId:"WDC-" + data?.accountNumber,
             });
 
             await LogService.createLog({
