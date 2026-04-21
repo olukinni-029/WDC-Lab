@@ -25,6 +25,24 @@ export const WalletController = {
         }
 
         switch (eventType) {
+
+            case "OUTGOING_PAYMENT_SUCCESS": {
+                console.log("========================================>>>>>>>>")
+                console.log("========================================>>>>>>>>")
+                console.log("========================================>>>>>>>>")
+                console.log("========================================>>>>>>>>")
+
+                await LogService.createLog({
+                    eventType,
+                    identifier: "PARTNER_OUTGOING_TRANSFER",
+                    userType: "PARTNER",
+                    request: req.body,
+                    response: "N/A",
+                });
+
+                break;
+            }
+
             case "VIRTUAL_ACCOUNT_CREATE_SUCCESS": {
                 const wallet = await WalletService.createWallet({
                     virtualAccountNumber: data?.accountNumber,
@@ -263,7 +281,6 @@ export const WalletController = {
             theAmount,
             "debit",
         );
-        console.log({ walletUpdate })
 
         if (!walletUpdate) {
             return errorResponse(res, "error updating wallet", 400);
@@ -272,7 +289,6 @@ export const WalletController = {
         const url = process.env.SUPPLY_BASE + "partners/transfer";
 
         const response = await restClientWithHeaders("POST", url, { data }, headers);
-        console.log({ response });
         if (response?.success == false) {
             await Promise.all([
                 WalletTransactionService.create({
