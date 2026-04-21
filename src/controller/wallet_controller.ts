@@ -20,22 +20,24 @@ export const WalletController = {
 webhook: asyncHandler(async (req: Request, res: Response) => {
     const { eventType, data } = req.body;
 
-    console.log("=====================================");
-    console.log({ eventType, data });
-    console.log("=====================================");
+    // console.log("=====================================");
+    // console.log({ eventType, data });
+    // console.log("=====================================");
 
     if (!eventType || !data) {
         return res.status(400).send("Invalid payload");
     }
 
-    console.log("================================================");
-    console.log("Webhook received:", eventType);
-    console.log("================================================");
+    // console.log("================================================");
+    // console.log("Webhook received:", eventType);
+    // console.log("================================================");
 
     switch (eventType) {
-
         case "VIRTUAL_ACCOUNT_CREATE_SUCCESS": {
-            const wallet = await WalletService.createWallet(data);
+            const wallet = await WalletService.createWallet({
+                virtualAccountNumber: data?.accountNumber,
+                virtualAccountName: data?.accountName,
+            });
 
             await LogService.createLog({
                 eventType,
