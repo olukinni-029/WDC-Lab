@@ -3,7 +3,6 @@ import { WalletService } from "../services/wallet_service";
 import asyncHandler from "../utils/common/asyncHandler";
 import { errorResponse, successResponse } from "../utils/serverresponse/successresponse";
 import { UserService } from "../services/user.service";
-import emitter from "../utils/common/eventEmitter";
 import { restClientWithHeaders } from "../utils/common/restclient";
 import { LogService } from "../services/systemlogs.service";
 import { WalletHistoryService } from "../services/wallethistory.service";
