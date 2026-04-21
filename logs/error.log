@@ -210,3 +210,36 @@
     at C:\Users\USER\Desktop\WDC_Lab\node_modules\mongoose\lib\document.js:3142:17
     at C:\Users\USER\Desktop\WDC_Lab\node_modules\mongoose\lib\schemaType.js:1446:9
     at processTicksAndRejections (node:internal/process/task_queues:85:11) - /api/v1/request-withdrawal - POST - ::1
+2026-04-21T12:31:37.127Z [right meow!] [31merror[39m: VirtualWallet validation failed: availableBalance: Cast to Number failed for value "NaN" (type number) at path "availableBalance"
+2026-04-21T12:31:37.129Z [right meow!] [31merror[39m: Error: VirtualWallet validation failed: availableBalance: Cast to Number failed for value "NaN" (type number) at path "availableBalance" - ValidationError: VirtualWallet validation failed: availableBalance: Cast to Number failed for value "NaN" (type number) at path "availableBalance"
+    at model.Document.invalidate (/home/xybug/Downloads/WDC-Lab/node_modules/mongoose/lib/document.js:3381:32)
+    at model.$set (/home/xybug/Downloads/WDC-Lab/node_modules/mongoose/lib/document.js:1498:12)
+    at model.set [as availableBalance] (/home/xybug/Downloads/WDC-Lab/node_modules/mongoose/lib/helpers/document/compile.js:205:19)
+    at WalletService.<anonymous> (/home/xybug/Downloads/WDC-Lab/src/services/wallet_service.ts:45:40)
+    at Generator.next (<anonymous>)
+    at fulfilled (/home/xybug/Downloads/WDC-Lab/src/services/wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5) - /api/v1/transfer - POST - ::1
+2026-04-21T12:32:53.468Z [right meow!] [31merror[39m: VirtualWallet validation failed: availableBalance: Cast to Number failed for value "NaN" (type number) at path "availableBalance"
+2026-04-21T12:32:53.470Z [right meow!] [31merror[39m: Error: VirtualWallet validation failed: availableBalance: Cast to Number failed for value "NaN" (type number) at path "availableBalance" - ValidationError: VirtualWallet validation failed: availableBalance: Cast to Number failed for value "NaN" (type number) at path "availableBalance"
+    at model.Document.invalidate (/home/xybug/Downloads/WDC-Lab/node_modules/mongoose/lib/document.js:3381:32)
+    at model.$set (/home/xybug/Downloads/WDC-Lab/node_modules/mongoose/lib/document.js:1498:12)
+    at model.set [as availableBalance] (/home/xybug/Downloads/WDC-Lab/node_modules/mongoose/lib/helpers/document/compile.js:205:19)
+    at WalletService.<anonymous> (/home/xybug/Downloads/WDC-Lab/src/services/wallet_service.ts:45:40)
+    at Generator.next (<anonymous>)
+    at fulfilled (/home/xybug/Downloads/WDC-Lab/src/services/wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5) - /api/v1/transfer - POST - ::1
+2026-04-21T12:33:33.996Z [right meow!] [31merror[39m: VirtualWallet validation failed: availableBalance: Cast to Number failed for value "NaN" (type number) at path "availableBalance"
+2026-04-21T12:33:33.997Z [right meow!] [31merror[39m: Error: VirtualWallet validation failed: availableBalance: Cast to Number failed for value "NaN" (type number) at path "availableBalance" - ValidationError: VirtualWallet validation failed: availableBalance: Cast to Number failed for value "NaN" (type number) at path "availableBalance"
+    at model.Document.invalidate (/home/xybug/Downloads/WDC-Lab/node_modules/mongoose/lib/document.js:3381:32)
+    at model.$set (/home/xybug/Downloads/WDC-Lab/node_modules/mongoose/lib/document.js:1498:12)
+    at model.set [as availableBalance] (/home/xybug/Downloads/WDC-Lab/node_modules/mongoose/lib/helpers/document/compile.js:205:19)
+    at WalletService.<anonymous> (/home/xybug/Downloads/WDC-Lab/src/services/wallet_service.ts:45:40)
+    at Generator.next (<anonymous>)
+    at fulfilled (/home/xybug/Downloads/WDC-Lab/src/services/wallet_service.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5) - /api/v1/transfer - POST - ::1
+2026-04-21T12:37:00.186Z [right meow!] [31merror[39m: Cannot read properties of undefined (reading 'transactionId')
+2026-04-21T12:37:00.191Z [right meow!] [31merror[39m: Error: Cannot read properties of undefined (reading 'transactionId') - TypeError: Cannot read properties of undefined (reading 'transactionId')
+    at /home/xybug/Downloads/WDC-Lab/src/controller/wallet_controller.ts:282:43
+    at Generator.next (<anonymous>)
+    at fulfilled (/home/xybug/Downloads/WDC-Lab/src/controller/wallet_controller.ts:5:58)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5) - /api/v1/transfer - POST - ::1

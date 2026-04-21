@@ -17,120 +17,123 @@ import { generateRsaKeyPairAsync, headers } from "../utils/helper";
 
 export const WalletController = {
 
-webhook: asyncHandler(async (req: Request, res: Response) => {
-    const { eventType, data } = req.body;
+    webhook: asyncHandler(async (req: Request, res: Response) => {
+        const { eventType, data } = req.body;
 
-    // console.log("=====================================");
-    // console.log({ eventType, data });
-    // console.log("=====================================");
-
-    if (!eventType || !data) {
-        return res.status(400).send("Invalid payload");
-    }
-
-    // console.log("================================================");
-    // console.log("Webhook received:", eventType);
-    // console.log("================================================");
-
-    switch (eventType) {
-        case "VIRTUAL_ACCOUNT_CREATE_SUCCESS": {
-            const wallet = await WalletService.createWallet({
-                virtualAccountNumber: data?.accountNumber,
-                virtualAccountName: data?.accountName,
-                userId:"WDC-" + data?.accountNumber,
-            });
-
-            await LogService.createLog({
-                eventType,
-                identifier: "PARTNER_VA",
-                userType: "PARTNER",
-                request: req.body,
-                response: wallet,
-            });
-
-            break;
+        if (!eventType || !data) {
+            return res.status(400).send("Invalid payload");
         }
 
-        case "INFLOW_PAYMENT_SUCCESS": {
+        switch (eventType) {
+            case "VIRTUAL_ACCOUNT_CREATE_SUCCESS": {
+                const wallet = await WalletService.createWallet({
+                    virtualAccountNumber: data?.accountNumber,
+                    virtualAccountName: data?.accountName,
+                    userId: "WDC-" + data?.accountNumber,
+                });
 
-            const basePayload = {
-                transactionId: data.referenceID,
-                sessionId: data.sessionId,
-                paymentReference: data.paymentReference,
-                amount: Number(data.amount),
-                beneficiaryAccountNumber: data.beneficiaryAccountNumber,
-                beneficiaryAccountName: data.beneficiaryAccountName,
-                originatingAccountName: data.originatingAccountName,
-                originatingAccountNumber: data.originatingAccountNumber,
-                publishers: data.publishers,
-            };
-
-            const updateWallet = await WalletService.updateBalance(
-                data.beneficiaryAccountNumber,
-                basePayload.amount,
-                "credit"
-            );
-
-            if (!updateWallet) {
                 await LogService.createLog({
                     eventType,
-                    identifier: "INFLOW_WEBHOOK",
-                    userType: "SYSTEM",
+                    identifier: "PARTNER_VA",
+                    userType: "PARTNER",
                     request: req.body,
-                    response: basePayload,
-                    ip: req.ip,
-                    status: "FAILED",
+                    response: wallet,
                 });
 
                 break;
             }
 
-            await Promise.all([
-                LogService.createLog({
-                    eventType,
-                    identifier: "INFLOW_WEBHOOK",
-                    userType: "SYSTEM",
-                    request: req.body,
-                    response: { received: true },
-                    ip: req.ip,
-                    status: "SUCCESS",
-                }),
+            case "INFLOW_PAYMENT_SUCCESS": {
 
-                WalletHistoryService.createByAccountNumber({
-                    accountNumber: data.beneficiaryAccountNumber,
-                    amount: basePayload.amount,
-                    transactionType: "INFLOW",
-                    description: "Inflow payment received",
-                    userId: data.userId,
-                    owner: "WDC Digital Centre",
+                const basePayload = {
                     transactionId: data.referenceID,
-                    channel: "INFLOW",
-                    metadata: data,
-                }),
+                    sessionId: data.sessionId,
+                    paymentReference: data.paymentReference,
+                    amount: Number(data.amount),
+                    beneficiaryAccountNumber: data.beneficiaryAccountNumber,
+                    beneficiaryAccountName: data.beneficiaryAccountName,
+                    originatingAccountName: data.originatingAccountName,
+                    originatingAccountNumber: data.originatingAccountNumber,
+                    publishers: data.publishers,
+                };
 
-                WalletTransactionService.create({
-                    walletId: data.beneficiaryAccountNumber,
-                    userId: data.userId, // ✅ FIXED TYPO (was beneficiaryAccountNumber)
-                    transactionType: "credit",
-                    amount: basePayload.amount,
-                    description: data?.narration ?? "TRANSFER",
-                    referenceTransactionId: data.referenceID,
-                    transactionId: data.referenceID,
-                    fundingMethod: "BANK_TRANSFER",
-                    status: "completed",
-                    bankResponse: {}
-                }),
-            ]);
+                const updateWallet = await WalletService.updateBalance(
+                    data.beneficiaryAccountNumber,
+                    basePayload.amount,
+                    "credit"
+                );
 
-            break;
+                if (!updateWallet) {
+                    await LogService.createLog({
+                        eventType,
+                        identifier: "INFLOW_WEBHOOK",
+                        userType: "SYSTEM",
+                        request: req.body,
+                        response: basePayload,
+                        ip: req.ip,
+                        status: "FAILED",
+                    });
+
+                    break;
+                }
+
+                await Promise.all([
+                    LogService.createLog({
+                        eventType,
+                        identifier: "INFLOW_WEBHOOK",
+                        userType: "SYSTEM",
+                        request: req.body,
+                        response: { received: true },
+                        ip: req.ip,
+                        status: "SUCCESS",
+                    }),
+
+                    WalletHistoryService.createByAccountNumber({
+                        accountNumber: data.beneficiaryAccountNumber,
+                        amount: basePayload.amount,
+                        transactionType: "INFLOW",
+                        description: "Inflow payment received",
+                        userId: data.userId,
+                        owner: "WDC Digital Centre",
+                        transactionId: data.referenceID,
+                        channel: "INFLOW",
+                        metadata: data,
+                    }),
+
+                    WalletTransactionService.create({
+
+                        walletId: updateWallet._id,
+                        userId: updateWallet.virtualAccountNumber,
+                        transactionType: "credit",
+                        amount: basePayload.amount,
+                        description: "INFLOW",
+                        referenceTransactionId: data.sessionId,
+                        transactionId: data.referenceID,
+                        fundingMethod: "BANK_TRANSFER",
+                        status: "completed",
+                        bankResponse: {
+                            sessionID: data?.sessionID,
+                            transactionId: data?.sessionID,
+                            destinationInstitutionCode: data?.destinationInstitutionCode,
+                            beneficiaryAccountName: data?.beneficiaryAccountName,
+                            beneficiaryAccountNumber: data?.beneficiaryAccountNumber,
+                            beneficiaryBankVerificationNumber: data?.beneficiaryBankVerificationNumber,
+                            originatorAccountName: data?.originatingAccountName,
+                            originatorAccountNumber: data?.originatingAccountNumber,
+                            amount: data?.amount,
+                        }
+                    }),
+                ]);
+
+                break;
+            }
+
+            default:
+                console.log("Unhandled event type:", eventType);
         }
 
-        default:
-            console.log("Unhandled event type:", eventType);
-    }
-
-    return res.sendStatus(200);
-}),
+        return res.sendStatus(200);
+    }),
 
 
 
@@ -241,24 +244,26 @@ webhook: asyncHandler(async (req: Request, res: Response) => {
             headers
         );
 
+
         if (!decrypt.data?.result) {
             return errorResponse(res, "internal error", 404);
         }
 
+        console.log({ decrypt: decrypt.data.result })
         const wallet = await WalletService.findByAccountNumber(originatorAccountNumber);
-        if (!wallet) return errorResponse(res, "wallet not found", 404);
+        if (!wallet) return errorResponse(res, "E0 - wallet not found", 404);
 
-        const theAmount = Number(decrypt?.data?.amount);
-        if (wallet.availableBalance < Number(theAmount)) {
-            return errorResponse(res, "insufficient balance", 400);
-        }
-
+        const theAmount = Number(decrypt?.data?.result?.amount);
+        if (!Number.isFinite(theAmount) || theAmount <= 0) return errorResponse(res, "Invalid amount", 400);
+        if (theAmount < 1) return errorResponse(res, "Amount must be greater than 0", 400);
+        if (Number(wallet.availableBalance) < Number(theAmount)) return errorResponse(res, "insufficient balance", 400);
 
         const walletUpdate = await WalletService.updateBalance(
             originatorAccountNumber, // this is the customer's account number
             theAmount,
             "debit",
         );
+        console.log({ walletUpdate })
 
         if (!walletUpdate) {
             return errorResponse(res, "error updating wallet", 400);
@@ -267,18 +272,17 @@ webhook: asyncHandler(async (req: Request, res: Response) => {
         const url = process.env.SUPPLY_BASE + "partners/transfer";
 
         const response = await restClientWithHeaders("POST", url, { data }, headers);
-        const result = response?.data?.result;
-
-        if (!result || result.responseCode !== "200") {
+        console.log({ response });
+        if (response?.success == false) {
             await Promise.all([
                 WalletTransactionService.create({
-                    walletId: originatorAccountNumber,
+                    walletId: wallet._id,
                     userId: originatorAccountNumber,
                     transactionType: "debit",
                     amount: theAmount,
                     description: "TRANSFER",
                     referenceTransactionId: "N/A",
-                    transactionId: result.transactionId,
+                    transactionId: "N/A",
                     fundingMethod: "BANK_TRANSFER",
                     status: "failed",
                     bankResponse: {
@@ -290,7 +294,7 @@ webhook: asyncHandler(async (req: Request, res: Response) => {
                     identifier: "OUTWARD_TRANSFER",
                     userType: "SYSTEM",
                     request: req.body,
-                    response: response?.data,
+                    response: response?.message,
                     ip: req.ip,
                     status: "FAILED",
                 })
@@ -298,9 +302,12 @@ webhook: asyncHandler(async (req: Request, res: Response) => {
             return errorResponse(res, "transfer failed", 400);
         }
 
+
+        const result = response?.data?.result;
+
         await Promise.all([
             WalletTransactionService.create({
-                walletId: originatorAccountNumber,
+                walletId: wallet._id,
                 userId: originatorAccountNumber,
                 transactionType: "debit",
                 amount: theAmount,

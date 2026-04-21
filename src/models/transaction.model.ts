@@ -11,7 +11,7 @@ export type TransactionType = "credit" | "debit" | "adjustment";
 
 export interface IWalletTransaction extends Document {
     walletId: Types.ObjectId;
-    userId: Types.ObjectId;
+    userId: string;
     transactionType: TransactionType;
     amount: number;
     description?: string;
@@ -54,8 +54,7 @@ const walletTransactionSchema = new Schema<IWalletTransaction>(
         },
 
         userId: {
-            type: Schema.Types.ObjectId,
-            ref: "User",
+            type: String ,
             required: true,
         },
 

@@ -221,7 +221,7 @@ export class WalletService {
     }
 
     static async findByAccountNumber(accountNumber: string) {
-        return await VirtualWalletModel.findOne({ accountNumber });
+        return await VirtualWalletModel.findOne({virtualAccountNumber: accountNumber });
     }
 
     static async findByUserId(userId: string) {
