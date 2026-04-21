@@ -269,18 +269,19 @@ export const WalletController = {
             return errorResponse(res, "internal error", 404);
         }
 
-        console.log({ decrypt: decrypt.data.result })
         const wallet = await WalletService.findByAccountNumber(originatorAccountNumber);
         if (!wallet) return errorResponse(res, "E0 - wallet not found", 404);
 
+        const fee = 4.5;
         const theAmount = Number(decrypt?.data?.result?.amount);
+        const totalAmount = Number(decrypt?.data?.result?.amount) + fee;
         if (!Number.isFinite(theAmount) || theAmount <= 0) return errorResponse(res, "Invalid amount", 400);
         if (theAmount < 1) return errorResponse(res, "Amount must be greater than 0", 400);
         if (Number(wallet.availableBalance) < Number(theAmount)) return errorResponse(res, "insufficient balance", 400);
 
         const walletUpdate = await WalletService.updateBalance(
             originatorAccountNumber, // this is the customer's account number
-            theAmount,
+            totalAmount,
             "debit",
         );
 
@@ -294,10 +295,12 @@ export const WalletController = {
         if (response?.success == false) {
             await Promise.all([
                 WalletTransactionService.create({
+                    totalAmount: totalAmount,
+                    fee: fee,
+                    amount: theAmount,
                     walletId: wallet._id,
                     userId: originatorAccountNumber,
                     transactionType: "debit",
-                    amount: theAmount,
                     description: "TRANSFER",
                     referenceTransactionId: "N/A",
                     transactionId: "N/A",
@@ -323,13 +326,16 @@ export const WalletController = {
 
         const result = response?.data?.result;
 
-        await Promise.all([
+        const [walletTransaction, walletHistory] = await Promise.all([
             WalletTransactionService.create({
+
+                totalAmount: totalAmount,
+                fee: fee,
+                amount: theAmount,
                 walletId: wallet._id,
                 userId: originatorAccountNumber,
                 transactionType: "debit",
-                amount: theAmount,
-                description: "TRANSFER",
+                description: "OUTGOING_TRANSFER",
                 referenceTransactionId: result.paymentReference,
                 transactionId: result.transactionId,
                 fundingMethod: "BANK_TRANSFER",
@@ -357,6 +363,7 @@ export const WalletController = {
             WalletHistoryService.createByAccountNumber({
                 accountNumber: originatorAccountNumber,
                 amount: theAmount,
+                fee: fee,
                 transactionType: "TRANSFER",
                 description: result?.narration,
                 userId: originatorAccountNumber,
@@ -367,7 +374,7 @@ export const WalletController = {
             }),
         ])
 
-        return successResponse(res, {}, "Withdrawal request submitted");
+        return successResponse(res, { walletTransaction }, "Withdrawal request submitted");
     }),
 
     getAllUserWalletHistory: asyncHandler(async (req: Request, res: Response) => {

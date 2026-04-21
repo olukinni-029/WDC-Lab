@@ -15,6 +15,7 @@ interface CreateWalletHistoryDTO {
     description?: string;
     userId?: string;
     owner?: string;
+    fee?: number;
 
     originatingAccountName?: string;
     originatingAccountNumber?: string;
@@ -42,6 +43,7 @@ export class WalletHistoryService {
 
             const history = await WalletHistory.create({
                 accountNumber: payload.accountNumber,
+                fee: payload.fee,
 
                 amount: payload.amount,
                 balanceBefore,

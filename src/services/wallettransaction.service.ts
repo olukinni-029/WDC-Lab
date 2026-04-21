@@ -6,6 +6,8 @@ interface CreateTransactionDTO {
     userId: string | Types.ObjectId;
     transactionType: "credit" | "debit" | "adjustment";
     amount: number;
+    totalAmount?: number;
+    fee?: number;
     description?: string;
     referenceTransactionId?: string;
     transactionId?: string;
@@ -20,6 +22,8 @@ export class WalletTransactionService {
     public static async create(payload: Partial<CreateTransactionDTO>) {
         try {
             const tx = await WalletTransactionModel.create({
+                totalAmount: payload.totalAmount,
+                fee: payload.fee,
                 walletId: payload.walletId,
                 userId: payload.userId,
                 transactionType: payload.transactionType,

@@ -14,6 +14,8 @@ export interface IWalletTransaction extends Document {
     userId: string;
     transactionType: TransactionType;
     amount: number;
+    totalAmount?: number;
+    fee: number;
     description?: string;
     referenceTransactionId?: string;
     responseCode?: string;
@@ -54,7 +56,7 @@ const walletTransactionSchema = new Schema<IWalletTransaction>(
         },
 
         userId: {
-            type: String ,
+            type: String,
             required: true,
         },
 
@@ -75,6 +77,10 @@ const walletTransactionSchema = new Schema<IWalletTransaction>(
             required: true,
         },
 
+        totalAmount: {
+            type: Number,
+        },
+        fee: { type: Number },
         description: {
             type: String,
         },
