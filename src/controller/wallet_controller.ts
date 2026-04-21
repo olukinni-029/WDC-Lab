@@ -29,6 +29,8 @@ export const WalletController = {
             case "OUTGOING_PAYMENT_SUCCESS": {
                 console.log("========================================>>>>>>>>")
                 console.log("========================================>>>>>>>>")
+                console.log(eventType)
+                console.log(data)
                 console.log("========================================>>>>>>>>")
                 console.log("========================================>>>>>>>>")
 
