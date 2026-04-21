@@ -25,12 +25,12 @@ app.set("trust proxy", 1); // Only trust the first proxy
 
 app.disable("x-powered-by");
 
-app.use((req, res, next) => {
-    if (process.env.NODE_ENV === "production" && !req.secure) {
-        return res.redirect("https://" + req.headers.host + req.url);
-    }
-    next();
-});
+// app.use((req, res, next) => {
+//     if (process.env.NODE_ENV === "production" && !req.secure) {
+//         return res.redirect("https://" + req.headers.host + req.url);
+//     }
+//     next();
+// });
 
 
 app.use(blockBot)
