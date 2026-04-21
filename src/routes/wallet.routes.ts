@@ -1,13 +1,14 @@
 import { Router } from "express";
 import { WalletController } from "../controller/wallet_controller";
-import { checkApiKey } from "../middlewares/auth";
+import { checkApiKey } from "../middlewares/Auth";
+import { schemas, validate } from "../utils/validation";
 
 const walletRouter = Router();
 
 //TODO: add joi validation
-walletRouter.post("/signupfee", checkApiKey, WalletController.signUpFee);
+walletRouter.post("/signupfee", checkApiKey,validate(schemas.signUpSchema), WalletController.signUpFee);
 walletRouter.post("/webhook", WalletController.webhook);
-walletRouter.post("/transfer", checkApiKey, WalletController.transfer);
+walletRouter.post("/transfer", checkApiKey, validate(schemas.transferSchema), WalletController.transfer);
 walletRouter.get("/transactions", checkApiKey, WalletController.getAllUserTransactions);
 walletRouter.get("/wallet-history", checkApiKey, WalletController.getAllUserWalletHistory);
 
