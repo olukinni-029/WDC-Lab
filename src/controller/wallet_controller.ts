@@ -373,7 +373,6 @@ export const WalletController = {
             { result: result.items, pagedInfo },
             "success",
         );
-
     }),
 
 
