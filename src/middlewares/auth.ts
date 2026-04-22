@@ -33,7 +33,6 @@ export const checkApiKey = async (
     const theMerchantId = restCallData?.merchantId;
     const thePartnerName = restCallData?.name;
     const partnerNameEnv = process.env.PARTNER_NAME_ENV;
-
     console.log({ theMerchantId, thePartnerName, partnerNameEnv })
 
     if (partnerNameEnv != thePartnerName)
