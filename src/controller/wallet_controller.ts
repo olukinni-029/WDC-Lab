@@ -347,7 +347,7 @@ export const WalletController = {
         };
 
         let filter: { [key: string]: any } = {};
-        if (accountNumber) filter.accountNumber = accountNumber as string;
+        if (accountNumber) filter.virtualAccountNumber= accountNumber as string;
 
         const result = await getPagedAndFilteredData(
             VirtualWalletModel,
