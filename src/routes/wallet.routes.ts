@@ -11,5 +11,6 @@ walletRouter.post("/webhook", WalletController.webhook);
 walletRouter.post("/transfer", checkApiKey, validate(schemas.transferSchema), WalletController.transfer);
 walletRouter.get("/transactions", checkApiKey, WalletController.getAllUserTransactions);
 walletRouter.get("/wallet-history", checkApiKey, WalletController.getAllUserWalletHistory);
+walletRouter.get("/virtual-wallet", checkApiKey, WalletController.getVirtualWallets);
 
 export default walletRouter;

@@ -12,6 +12,7 @@ import { WalletTransactionModel } from "../models/transaction.model";
 import WalletHistory from "../models/wallet_history.model";
 import { encryptPayloadToSingleField, getPartnerWithKey } from "../utils/common/encryptor";
 import { generateRsaKeyPairAsync, headers } from "../utils/helper";
+import { VirtualWalletModel } from "../models/virtual_wallet.model";
 
 
 export const WalletController = {
@@ -150,29 +151,29 @@ export const WalletController = {
 
     // NOTE: on success please change the payment status for the signup fee to true
     signUpFee: asyncHandler(async (req: Request, res: Response) => {
-    const url = process.env.SUPPLY_BASE as string + "partners/dynamic/account";
-    const { amount, firstName, lastName } = req.body;
+        const url = process.env.SUPPLY_BASE as string + "partners/dynamic/account";
+        const { amount, firstName, lastName } = req.body;
 
-    const payload = {
-        firstName: `${firstName} .${lastName[0]}`,
-        amount,
-        lastName: "WDC_SIGNUP_FEE",
-    };
+        const payload = {
+            firstName: `${firstName} .${lastName[0]}`,
+            amount,
+            lastName: "WDC_SIGNUP_FEE",
+        };
 
-    const call = await restClientWithHeaders("POST", url, payload, headers);
-    console.log(call);
-    if (!call) {
-        return errorResponse(res, "error creating account", 400);
-    }
+        const call = await restClientWithHeaders("POST", url, payload, headers);
+        console.log(call);
+        if (!call) {
+            return errorResponse(res, "error creating account", 400);
+        }
 
-    if (call?.data?.result?.responseCode !== "00") {
-        return errorResponse(res, "error creating account, please retry", 400);
-    }
+        if (call?.data?.result?.responseCode !== "00") {
+            return errorResponse(res, "error creating account, please retry", 400);
+        }
 
-    const data = call?.data?.result?.data;
+        const data = call?.data?.result?.data;
 
-    return successResponse(res, data, "success");
-}),
+        return successResponse(res, data, "success");
+    }),
 
 
     getUservirtualAccount: asyncHandler(async (req: Request, res: Response) => {
@@ -330,6 +331,52 @@ export const WalletController = {
 
         return successResponse(res, { walletTransaction }, "Withdrawal request submitted");
     }),
+
+
+    getVirtualWallets: asyncHandler(async (req: Request, res: Response) => {
+
+        const {
+            page,
+            limit,
+            accountNumber,
+        } = req.query;
+
+        const paginationInfo: IPaginationInfo = {
+            page: parseInt(page as string, 10) || 1,
+            limit: parseInt(limit as string, 10) || 10,
+        };
+
+        let filter: { [key: string]: any } = {};
+        if (accountNumber) filter.accountNumber = accountNumber as string;
+
+        const result = await getPagedAndFilteredData(
+            VirtualWalletModel,
+            filter,
+            paginationInfo,
+        );
+        const currentPage = paginationInfo.page;
+        const totalPages = Math.ceil(
+            result.paginationInfo.total! / paginationInfo.limit,
+        );
+
+        const pagedInfo = {
+            page: currentPage,
+            limit: paginationInfo.limit,
+            hasPrevious: currentPage! > 1,
+            hasNext: currentPage! < totalPages,
+            total: result.paginationInfo.total,
+            totalPages,
+        };
+
+        return successResponse(
+            res,
+            { result: result.items, pagedInfo },
+            "success",
+        );
+
+    }),
+
+
 
     getAllUserWalletHistory: asyncHandler(async (req: Request, res: Response) => {
 
