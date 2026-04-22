@@ -447,7 +447,7 @@ export const WalletController = {
         };
 
         let filter: { [key: string]: any } = {};
-        filter.accountNumber = acccountNumber;
+        filter.userId = acccountNumber;
 
         const result = await getPagedAndFilteredData(
             WalletTransactionModel,
