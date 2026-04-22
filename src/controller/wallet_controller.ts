@@ -150,25 +150,29 @@ export const WalletController = {
 
     // NOTE: on success please change the payment status for the signup fee to true
     signUpFee: asyncHandler(async (req: Request, res: Response) => {
-        const url = process.env.SUPPLY_BASE as string + "partners/dynamic/account";
-        const { amount, firstName, lastName } = req.body;
-        const payload = {
-            firstName: firstName + " ." + lastName[0],
-            amount,
-            lastName: "WDC_SIGNUP_FEE",
-        }
+    const url = process.env.SUPPLY_BASE as string + "partners/dynamic/account";
+    const { amount, firstName, lastName } = req.body;
 
-        const call = await restClientWithHeaders("POST", url, payload, headers);
-        if (!call) return errorResponse(res, "error creating account", 400)
+    const payload = {
+        firstName: `${firstName} .${lastName[0]}`,
+        amount,
+        lastName: "WDC_SIGNUP_FEE",
+    };
 
-        if (call.data.result.responseCode != "00") {
-            return errorResponse(res, "error creating account, please retry", 400)
-        }
+    const call = await restClientWithHeaders("POST", url, payload, headers);
+    console.log(call);
+    if (!call) {
+        return errorResponse(res, "error creating account", 400);
+    }
 
-        const data = call?.data?.result.data;
-        return successResponse(res, data, "success")
+    if (call?.data?.result?.responseCode !== "00") {
+        return errorResponse(res, "error creating account, please retry", 400);
+    }
 
-    }),
+    const data = call?.data?.result?.data;
+
+    return successResponse(res, data, "success");
+}),
 
 
     getUservirtualAccount: asyncHandler(async (req: Request, res: Response) => {
