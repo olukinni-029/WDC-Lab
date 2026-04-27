@@ -33,6 +33,11 @@ const schemas = {
         originatorAccountNumber: Joi.string().required(),
         data: Joi.string().required(),
     }),
+
+    verifySchema: Joi.object().keys({
+        BVN: Joi.string().optional(),
+        NIN: Joi.string().optional(),
+    }),
 };
 
 export { validate, schemas };

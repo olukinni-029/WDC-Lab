@@ -13,6 +13,8 @@ import WalletHistory from "../models/wallet_history.model";
 import { encryptPayloadToSingleField, getPartnerWithKey } from "../utils/common/encryptor";
 import { generateRsaKeyPairAsync, headers } from "../utils/helper";
 import { VirtualWalletModel } from "../models/virtual_wallet.model";
+import { bvnVerification } from "../utils/common/BvnVerification";
+import { ninVerification } from "../utils/common/NinVerification";
 
 
 export const WalletController = {
@@ -481,5 +483,44 @@ export const WalletController = {
         const response = encryptPayloadToSingleField(req.body, user.publicKey as any);
         return successResponse(res, { response: response.data }, "success");
     }),
+
+    bvnAndNinVerification:asyncHandler(async(req:Request,res:Response)=>{
+        const user = await getPartnerWithKey(req,res);
+        if(!user) return;
+        const {BVN,NIN} = req.body;
+
+        if (!BVN && !NIN) {
+    return errorResponse(res, "Provide BVN or NIN", 400);
+  }
+
+  const result: Record<string, any> = {};
+
+       if(BVN){
+          const bvnData = await bvnVerification(BVN);
+      if (!bvnData?.success || !bvnData.data) {
+        return errorResponse(
+          res,
+          `BVN verification failed: ${bvnData.message}`,
+          400
+        );
+      }
+      result.bvn = bvnData.data;
+       }
+
+      // Verify NIN
+     if(NIN){
+         const ninData = await ninVerification(NIN);
+      if (!ninData?.success || !ninData.data) {
+        return errorResponse(
+          res,
+          `NIN verification failed: ${ninData.message}`,
+          400
+        );
+      }
+      result.nin = ninData.data;
+     }
+
+     return successResponse(res, result, "Verification successful");
+    })
 
 };
