@@ -5,7 +5,6 @@ import { schemas, validate } from "../utils/validation";
 
 const walletRouter = Router();
 
-//TODO: add joi validation
 walletRouter.post("/signupfee", checkApiKey,validate(schemas.signUpSchema), WalletController.signUpFee);
 walletRouter.post("/webhook", WalletController.webhook);
 walletRouter.post("/transfer", checkApiKey, validate(schemas.transferSchema), WalletController.transfer);
