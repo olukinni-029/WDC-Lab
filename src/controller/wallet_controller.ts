@@ -485,8 +485,7 @@ export const WalletController = {
     }),
 
     bvnAndNinVerification:asyncHandler(async(req:Request,res:Response)=>{
-        const user = await getPartnerWithKey(req,res);
-        if(!user) return;
+
         const {BVN,NIN} = req.body;
 
         if (!BVN && !NIN) {
