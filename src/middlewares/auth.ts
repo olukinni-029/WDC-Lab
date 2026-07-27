@@ -35,8 +35,10 @@ export const checkApiKey = async (
     const partnerNameEnv = process.env.PARTNER_NAME_ENV;
     console.log({ theMerchantId, thePartnerName, partnerNameEnv })
 
-    if (partnerNameEnv != thePartnerName)
+    if (partnerNameEnv != thePartnerName) {
+        console.log({ partnerNameEnv, thePartnerName })
         return errorResponse(res, "Forbiddent - Invalid API Key F03", 403);
+    }
 
     req.user = restCallData;
 
