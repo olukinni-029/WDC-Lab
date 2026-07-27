@@ -37,63 +37,63 @@ const setCachedPartner = (apiKey: string, merchantId: string | string[] | undefi
 };
 
 
-export const checkApiKey = async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction,
-) => {
-    let apiKey = req.headers["x-api-key"];
-    let merchantId = req.headers["merchant-id"];
-
-    if (!apiKey) {
-        return errorResponse(res, "Forbidden - No API key provided FO1", 403);
-    }
-
-    if (Array.isArray(apiKey)) {
-        apiKey = apiKey[0];
-    }
-
-    // 1. Check cache first
-    let restCallData = getCachedPartner(apiKey, merchantId);
-    console.log("****************************************")
-    console.dir(restCallData, { depth: null })
-    console.log("****************************************")
-
-    if (!restCallData) {
-        // 2. Cache miss — call the API
-        const url = (process.env.SUPPLY_BASE as string) + "partners/me";
-        const headers = {
-            "x-api-key": apiKey,
-            "merchant-id": merchantId,
-        };
-
-        const restCall = await restClientWithHeaders("GET", url, undefined, headers);
-
-        if (!restCall) {
-            return errorResponse(res, "Forbidden - Invalid API key FO2", 403);
-        }
-
-        restCallData = restCall?.data?.dataInfo;
-
-        // 3. Store in cache for 60 minutes
-        setCachedPartner(apiKey, merchantId, restCallData);
-    }
-
-    const theMerchantId = restCallData?.merchantId;
-    const thePartnerName = restCallData?.name;
-    const partnerNameEnv = process.env.PARTNER_NAME_ENV;
-
-    // console.log({ theMerchantId, thePartnerName, partnerNameEnv });
-    // console.dir(restCallData, { depth: null });
-
-    if (partnerNameEnv != thePartnerName) {
-        console.log({ partnerNameEnv, thePartnerName });
-        return errorResponse(res, "Forbidden - Invalid API Key F03", 403);
-    }
-
-    req.user = restCallData;
-    next();
-};
+// export const checkApiKey = async (
+//     req: express.Request,
+//     res: express.Response,
+//     next: express.NextFunction,
+// ) => {
+//     let apiKey = req.headers["x-api-key"];
+//     let merchantId = req.headers["merchant-id"];
+//
+//     if (!apiKey) {
+//         return errorResponse(res, "Forbidden - No API key provided FO1", 403);
+//     }
+//
+//     if (Array.isArray(apiKey)) {
+//         apiKey = apiKey[0];
+//     }
+//
+//     // 1. Check cache first
+//     let restCallData = getCachedPartner(apiKey, merchantId);
+//     console.log("****************************************")
+//     console.dir(restCallData, { depth: null })
+//     console.log("****************************************")
+//
+//     if (!restCallData) {
+//         // 2. Cache miss — call the API
+//         const url = (process.env.SUPPLY_BASE as string) + "partners/me";
+//         const headers = {
+//             "x-api-key": apiKey,
+//             "merchant-id": merchantId,
+//         };
+//
+//         const restCall = await restClientWithHeaders("GET", url, undefined, headers);
+//
+//         if (!restCall) {
+//             return errorResponse(res, "Forbidden - Invalid API key FO2", 403);
+//         }
+//
+//         restCallData = restCall?.data?.dataInfo;
+//
+//         // 3. Store in cache for 60 minutes
+//         setCachedPartner(apiKey, merchantId, restCallData);
+//     }
+//
+//     const theMerchantId = restCallData?.merchantId;
+//     const thePartnerName = restCallData?.name;
+//     const partnerNameEnv = process.env.PARTNER_NAME_ENV;
+//
+//     // console.log({ theMerchantId, thePartnerName, partnerNameEnv });
+//     // console.dir(restCallData, { depth: null });
+//
+//     if (partnerNameEnv != thePartnerName) {
+//         console.log({ partnerNameEnv, thePartnerName });
+//         return errorResponse(res, "Forbidden - Invalid API Key F03", 403);
+//     }
+//
+//     req.user = restCallData;
+//     next();
+// };
 
 // export const checkApiKey = async (
 //     req: express.Request,
@@ -139,3 +139,34 @@ export const checkApiKey = async (
 // };
 //
 //
+
+
+
+export const checkApiKey = async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+) => {
+    let apiKey = req.headers["x-api-key"];
+    let merchantId = req.headers["merchant-id"];
+
+    
+    if (!apiKey && !merchantId) {
+        return errorResponse(res, "Forbidden- No API key provided FO1", 403);
+    }
+
+    if (Array.isArray(apiKey)) {
+        apiKey = apiKey[0];
+    }
+
+    const restCallData = {
+        name:process.env.PARTNER_NAME_ENV,
+        merchantId: process.env.PARALLEX_MERCHANT_ID
+    }
+
+    req.user = restCallData;
+
+    next();
+};
+
+

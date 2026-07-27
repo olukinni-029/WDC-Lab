@@ -43,14 +43,14 @@ const server = httpServer.listen(PORT, () => {
 
 setupErrorHandling(server);
 
-const shutdown = () => {
-    server.close(() => {
-        logger.info("Server is closed");
-        // process.exit(0);
-    });
-};
-
-process.on("SIGINT", shutdown);
-process.on("SIGTERM", shutdown);
+// const shutdown = () => {
+//     server.close(() => {
+//         logger.info("Server is closed");
+//         // process.exit(0);
+//     });
+// };
+//
+// process.on("SIGINT", shutdown);
+// process.on("SIGTERM", shutdown);
 
 export { server };
