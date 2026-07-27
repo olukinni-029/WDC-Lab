@@ -46,7 +46,7 @@ setupErrorHandling(server);
 const shutdown = () => {
     server.close(() => {
         logger.info("Server is closed");
-        process.exit(0);
+        // process.exit(0);
     });
 };
 

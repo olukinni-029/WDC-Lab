@@ -244,3 +244,11 @@
     at fulfilled (/home/xybug/Downloads/WDC-Lab/src/controller/wallet_controller.ts:5:58)
     at processTicksAndRejections (node:internal/process/task_queues:103:5) - /api/v1/transfer - POST - ::1
 2026-04-21T14:34:38.913Z [right meow!] [31merror[39m: Error: Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.pnfemrm.mongodb.net
+2026-07-27T14:35:04.614Z [right meow!] [31merror[39m: Error: Invalid URL
+2026-07-27T14:35:04.615Z [right meow!] [31merror[39m: Shutting down the server due to Unhandled Promise Rejection
+2026-07-27T14:36:12.400Z [right meow!] [31merror[39m: Error: Invalid URL
+2026-07-27T14:36:12.400Z [right meow!] [31merror[39m: Shutting down the server due to Unhandled Promise Rejection
+2026-07-27T14:38:00.575Z [right meow!] [31merror[39m: Error: Invalid URL
+2026-07-27T14:38:00.575Z [right meow!] [31merror[39m: Shutting down the server due to Unhandled Promise Rejection
+2026-07-27T14:44:05.343Z [right meow!] [31merror[39m: Error: Invalid URL
+2026-07-27T14:44:05.343Z [right meow!] [31merror[39m: Shutting down the server due to Unhandled Promise Rejection
