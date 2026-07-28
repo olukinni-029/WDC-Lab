@@ -7,7 +7,7 @@ const walletRouter = Router();
 
 walletRouter.post("/signupfee", checkApiKey, validate(schemas.signUpSchema), WalletController.signUpFee);
 
-// walletRouter.post("/webhook", WalletController.webhook);
+walletRouter.post("/webhook", WalletController.webhook);
 
 
 
