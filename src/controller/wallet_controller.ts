@@ -134,7 +134,8 @@ export const WalletController = {
                 };
 
                 const updateWallet = await WalletService.updateBalance(
-                    data.beneficiaryAccountNumber,
+                    // data.beneficiaryAccountNumber, // 
+                    process.env.MOTHER_ACCOUNT as string,
                     basePayload.amount,
                     "credit",
                 );

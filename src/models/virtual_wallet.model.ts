@@ -11,10 +11,12 @@ export interface IVirtualWallet {
     pendingBalance: number;
     totalBalance: number;
     lastTransactionAt?: Date;
+    pool?: boolean;
 }
 
 const virtualWalletSchema = new Schema<IVirtualWallet>({
     userId: { type: String, required: true },
+    pool: {type: Boolean, default: false},
     virtualAccountNumber: { type: String, required: false },
     virtualAccountName: { type: String, required: false },
     nameEnquiryRef: { type: String, required: false },
