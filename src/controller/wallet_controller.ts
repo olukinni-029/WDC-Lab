@@ -24,16 +24,72 @@ import { generateRsaKeyPairAsync, headers } from "../utils/helper";
 import { VirtualWalletModel } from "../models/virtual_wallet.model";
 import { bvnVerification } from "../utils/common/BvnVerification";
 import { ninVerification } from "../utils/common/NinVerification";
+import crypto from "crypto";
+
+
+const WEBHOOK_TOLERANCE_MS = 5 * 60 * 1000; // 5 minutes, prevents replay of old captured payloads
+
+function isValidSignature(
+    rawBody: Buffer,
+    signatureHeader: string | undefined,
+    secretKey: string,
+): boolean {
+    if (!signatureHeader) return false;
+
+    const expected = crypto
+        .createHmac("sha256", secretKey)
+        .update(rawBody)
+        .digest("hex");
+
+    // timingSafeEqual requires equal-length buffers, and throws otherwise —
+    // guard length first so a mismatched length doesn't crash the request.
+    const expectedBuf = Buffer.from(expected, "hex");
+    const providedBuf = Buffer.from(signatureHeader, "hex");
+
+    if (expectedBuf.length !== providedBuf.length) return false;
+
+    return crypto.timingSafeEqual(expectedBuf, providedBuf);
+}
+
+
 
 export const WalletController = {
+
     webhook: asyncHandler(async (req: Request, res: Response) => {
+        const signatureHeader = req.headers["x-webhook-signature"] as string | undefined;
+        const timestampHeader = req.headers["x-webhook-timestamp"] as string | undefined;
+
+        // You need to know which partner this webhook is claiming to be from,
+        // to look up the matching secretKey. Depending on your routing this
+        // might come from a URL param (e.g. /webhook/:partnerName), a header,
+        // or from req.body itself if the sender includes it. Adjust accordingly:
+
+        const rawBody = (req as any).rawBody as Buffer | undefined;
+        if (!rawBody) {
+            console.error("rawBody missing — check express.json() verify config");
+            return res.status(500).send("Server misconfiguration");
+        }
+
+        if (!isValidSignature(rawBody, signatureHeader, process.env.PARTNER_KEY as string)) {
+            console.warn("Webhook signature mismatch");
+            return res.status(401).send("Invalid signature");
+        }
+
+        if (timestampHeader) {
+            const age = Date.now() - Number(timestampHeader);
+            if (Number.isNaN(age) || age > WEBHOOK_TOLERANCE_MS || age < -WEBHOOK_TOLERANCE_MS) {
+                console.warn("Webhook timestamp outside tolerance", { age });
+                return res.status(401).send("Stale or invalid timestamp");
+            }
+        }
+
         const { eventType, data } = req.body;
 
         if (!eventType || !data) {
             return res.status(400).send("Invalid payload");
         }
 
-        console.log({data, eventType})
+        console.log({ data, eventType });
 
         switch (eventType) {
             case "OUTGOING_PAYMENT_SUCCESS": {
@@ -44,7 +100,6 @@ export const WalletController = {
                     request: req.body,
                     response: "N/A",
                 });
-
                 break;
             }
 
@@ -62,7 +117,6 @@ export const WalletController = {
                     request: req.body,
                     response: wallet,
                 });
-
                 break;
             }
 
@@ -95,7 +149,6 @@ export const WalletController = {
                         ip: req.ip,
                         status: "FAILED",
                     });
-
                     break;
                 }
 
@@ -138,15 +191,13 @@ export const WalletController = {
                             destinationInstitutionCode: data?.destinationInstitutionCode,
                             beneficiaryAccountName: data?.beneficiaryAccountName,
                             beneficiaryAccountNumber: data?.beneficiaryAccountNumber,
-                            beneficiaryBankVerificationNumber:
-                                data?.beneficiaryBankVerificationNumber,
+                            beneficiaryBankVerificationNumber: data?.beneficiaryBankVerificationNumber,
                             originatorAccountName: data?.originatingAccountName,
                             originatorAccountNumber: data?.originatingAccountNumber,
                             amount: data?.amount,
                         },
                     }),
                 ]);
-
                 break;
             }
 
@@ -154,8 +205,141 @@ export const WalletController = {
                 console.log("Unhandled event type:", eventType);
         }
 
-        return res.sendStatus(200);
+        // Must match what sendPartnerWebhook's success check expects:
+        // raw === "Webhook received" || raw === "OK" || raw.success === true || raw.status === "OK"
+        return res.status(200).json({ success: true, status: "OK" });
     }),
+
+    // webhook: asyncHandler(async (req: Request, res: Response) => {
+    //     const { eventType, data } = req.body;
+    //
+    //     if (!eventType || !data) {
+    //         return res.status(400).send("Invalid payload");
+    //     }
+    //
+    //     console.log({data, eventType})
+    //
+    //     switch (eventType) {
+    //         case "OUTGOING_PAYMENT_SUCCESS": {
+    //             await LogService.createLog({
+    //                 eventType,
+    //                 identifier: "PARTNER_OUTGOING_TRANSFER",
+    //                 userType: "PARTNER",
+    //                 request: req.body,
+    //                 response: "N/A",
+    //             });
+    //
+    //             break;
+    //         }
+    //
+    //         case "VIRTUAL_ACCOUNT_CREATE_SUCCESS": {
+    //             const wallet = await WalletService.createWallet({
+    //                 virtualAccountNumber: data?.accountNumber,
+    //                 virtualAccountName: data?.accountName,
+    //                 userId: "WDC-" + data?.accountNumber,
+    //             });
+    //
+    //             await LogService.createLog({
+    //                 eventType,
+    //                 identifier: "PARTNER_VA",
+    //                 userType: "PARTNER",
+    //                 request: req.body,
+    //                 response: wallet,
+    //             });
+    //
+    //             break;
+    //         }
+    //
+    //         case "INFLOW_PAYMENT_SUCCESS": {
+    //             const basePayload = {
+    //                 transactionId: data.referenceID,
+    //                 sessionId: data.sessionId,
+    //                 paymentReference: data.paymentReference,
+    //                 amount: Number(data.amount),
+    //                 beneficiaryAccountNumber: data.beneficiaryAccountNumber,
+    //                 beneficiaryAccountName: data.beneficiaryAccountName,
+    //                 originatingAccountName: data.originatingAccountName,
+    //                 originatingAccountNumber: data.originatingAccountNumber,
+    //                 publishers: data.publishers,
+    //             };
+    //
+    //             const updateWallet = await WalletService.updateBalance(
+    //                 data.beneficiaryAccountNumber,
+    //                 basePayload.amount,
+    //                 "credit",
+    //             );
+    //
+    //             if (!updateWallet) {
+    //                 await LogService.createLog({
+    //                     eventType,
+    //                     identifier: "INFLOW_WEBHOOK",
+    //                     userType: "SYSTEM",
+    //                     request: req.body,
+    //                     response: basePayload,
+    //                     ip: req.ip,
+    //                     status: "FAILED",
+    //                 });
+    //
+    //                 break;
+    //             }
+    //
+    //             await Promise.all([
+    //                 LogService.createLog({
+    //                     eventType,
+    //                     identifier: "INFLOW_WEBHOOK",
+    //                     userType: "SYSTEM",
+    //                     request: req.body,
+    //                     response: { received: true },
+    //                     ip: req.ip,
+    //                     status: "SUCCESS",
+    //                 }),
+    //
+    //                 WalletHistoryService.createByAccountNumber({
+    //                     accountNumber: data.beneficiaryAccountNumber,
+    //                     amount: basePayload.amount,
+    //                     transactionType: "INFLOW",
+    //                     description: "Inflow payment received",
+    //                     userId: data.userId,
+    //                     owner: "WDC Digital Centre",
+    //                     transactionId: data.referenceID,
+    //                     channel: "INFLOW",
+    //                     metadata: data,
+    //                 }),
+    //
+    //                 WalletTransactionService.create({
+    //                     walletId: updateWallet._id,
+    //                     userId: updateWallet.virtualAccountNumber,
+    //                     transactionType: "credit",
+    //                     amount: basePayload.amount,
+    //                     description: "INFLOW",
+    //                     referenceTransactionId: data.sessionId,
+    //                     transactionId: data.referenceID,
+    //                     fundingMethod: "BANK_TRANSFER",
+    //                     status: "completed",
+    //                     bankResponse: {
+    //                         sessionID: data?.sessionID,
+    //                         transactionId: data?.sessionID,
+    //                         destinationInstitutionCode: data?.destinationInstitutionCode,
+    //                         beneficiaryAccountName: data?.beneficiaryAccountName,
+    //                         beneficiaryAccountNumber: data?.beneficiaryAccountNumber,
+    //                         beneficiaryBankVerificationNumber:
+    //                             data?.beneficiaryBankVerificationNumber,
+    //                         originatorAccountName: data?.originatingAccountName,
+    //                         originatorAccountNumber: data?.originatingAccountNumber,
+    //                         amount: data?.amount,
+    //                     },
+    //                 }),
+    //             ]);
+    //
+    //             break;
+    //         }
+    //
+    //         default:
+    //             console.log("Unhandled event type:", eventType);
+    //     }
+    //
+    //     return res.sendStatus(200);
+    // }),
 
     // NOTE: on success please change the payment status for the signup fee to true
     signUpFee: asyncHandler(async (req: Request, res: Response) => {
