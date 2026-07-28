@@ -309,3 +309,5 @@
     at emitErrorNT (node:internal/streams/destroy:170:8)
     at emitErrorCloseNT (node:internal/streams/destroy:129:3) - /api/v1/signupfee - POST - ::1
 2026-07-28T15:42:07.592Z [right meow!] [31merror[39m: Error: Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.pnfemrm.mongodb.net
+2026-07-28T15:52:02.143Z [right meow!] [31merror[39m: Error: MongoServerSelectionError: Server selection timed out after 30000 ms
+2026-07-28T15:57:17.882Z [right meow!] [31merror[39m: Error: Error: querySrv ESERVFAIL _mongodb._tcp.cluster0.pnfemrm.mongodb.net

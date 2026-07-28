@@ -133,9 +133,52 @@ export const WalletController = {
                     publishers: data.publishers,
                 };
 
-                const updateWallet = await WalletService.updateBalance(
-                    // data.beneficiaryAccountNumber, // 
+                // Case-insensitive check — real payloads use "WDC_SIGNUP_FEE", not "signUpFee".
+                // Optional chaining guards against beneficiaryAccountName being missing entirely.
+                const isSignupFee = basePayload.beneficiaryAccountName
+                    ?.toUpperCase()
+                    .includes("SIGNUP_FEE") ?? false;
+
+                // Mother account always gets credited — this is the real bank account
+                // that physically received the funds, regardless of what the inflow was for.
+                const updateMother = await WalletService.updateBalance(
                     process.env.MOTHER_ACCOUNT as string,
+                    basePayload.amount,
+                    "credit",
+                );
+
+                if (!updateMother) {
+                    await LogService.createLog({
+                        eventType,
+                        identifier: "INFLOW_WEBHOOK",
+                        userType: "SYSTEM",
+                        request: req.body,
+                        response: basePayload,
+                        ip: req.ip,
+                        status: "FAILED",
+                    });
+                    break;
+                }
+
+                if (isSignupFee) {
+                    // Signup fee inflows use a dynamic, throwaway virtual account number
+                    // we never persist as a real wallet — mother account credit above is
+                    // sufficient. Just log it and stop here.
+                    await LogService.createLog({
+                        eventType,
+                        identifier: "INFLOW_WEBHOOK_SIGNUP_FEE",
+                        userType: "SYSTEM",
+                        request: req.body,
+                        response: { motherUpdated: true, walletUpdated: false },
+                        ip: req.ip,
+                        status: "SUCCESS",
+                    });
+                    break;
+                }
+
+                // Not a signup fee — also credit the actual beneficiary wallet.
+                const updateWallet = await WalletService.updateBalance(
+                    basePayload.beneficiaryAccountNumber,
                     basePayload.amount,
                     "credit",
                 );
@@ -201,6 +244,98 @@ export const WalletController = {
                 ]);
                 break;
             }
+
+            // case "INFLOW_PAYMENT_SUCCESS": {
+            //     const basePayload = {
+            //         transactionId: data.referenceID,
+            //         sessionId: data.sessionId,
+            //         paymentReference: data.paymentReference,
+            //         amount: Number(data.amount),
+            //         beneficiaryAccountNumber: data.beneficiaryAccountNumber,
+            //         beneficiaryAccountName: data.beneficiaryAccountName,
+            //         originatingAccountName: data.originatingAccountName,
+            //         originatingAccountNumber: data.originatingAccountNumber,
+            //         publishers: data.publishers,
+            //     };
+            //
+            //     if (basePayload.beneficiaryAccountName.includes("signUpFee")) {
+            //         await LogService.createLog({
+            //             eventType,
+            //             identifier: "INFLOW_WEBHOOK_SIGNUP_FEE",
+            //             userType: "SYSTEM",
+            //             request: req.body,
+            //             response: basePayload,
+            //             ip: req.ip,
+            //             status: "SUCCESS",
+            //         });
+            //     }
+            //     const updateWallet = await WalletService.updateBalance(
+            //         process.env.MOTHER_ACCOUNT as string,
+            //         basePayload.amount,
+            //         "credit",
+            //     );
+            //
+            //     if (!updateWallet) {
+            //         await LogService.createLog({
+            //             eventType,
+            //             identifier: "INFLOW_WEBHOOK",
+            //             userType: "SYSTEM",
+            //             request: req.body,
+            //             response: basePayload,
+            //             ip: req.ip,
+            //             status: "FAILED",
+            //         });
+            //         break;
+            //     }
+            //
+            //     await Promise.all([
+            //         LogService.createLog({
+            //             eventType,
+            //             identifier: "INFLOW_WEBHOOK",
+            //             userType: "SYSTEM",
+            //             request: req.body,
+            //             response: { received: true },
+            //             ip: req.ip,
+            //             status: "SUCCESS",
+            //         }),
+            //
+            //         WalletHistoryService.createByAccountNumber({
+            //             accountNumber: data.beneficiaryAccountNumber,
+            //             amount: basePayload.amount,
+            //             transactionType: "INFLOW",
+            //             description: "Inflow payment received",
+            //             userId: data.userId,
+            //             owner: "WDC Digital Centre",
+            //             transactionId: data.referenceID,
+            //             channel: "INFLOW",
+            //             metadata: data,
+            //         }),
+            //
+            //         WalletTransactionService.create({
+            //             walletId: updateWallet._id,
+            //             userId: updateWallet.virtualAccountNumber,
+            //             transactionType: "credit",
+            //             amount: basePayload.amount,
+            //             description: "INFLOW",
+            //             referenceTransactionId: data.sessionId,
+            //             transactionId: data.referenceID,
+            //             fundingMethod: "BANK_TRANSFER",
+            //             status: "completed",
+            //             bankResponse: {
+            //                 sessionID: data?.sessionID,
+            //                 transactionId: data?.sessionID,
+            //                 destinationInstitutionCode: data?.destinationInstitutionCode,
+            //                 beneficiaryAccountName: data?.beneficiaryAccountName,
+            //                 beneficiaryAccountNumber: data?.beneficiaryAccountNumber,
+            //                 beneficiaryBankVerificationNumber: data?.beneficiaryBankVerificationNumber,
+            //                 originatorAccountName: data?.originatingAccountName,
+            //                 originatorAccountNumber: data?.originatingAccountNumber,
+            //                 amount: data?.amount,
+            //             },
+            //         }),
+            //     ]);
+            //     break;
+            // }
 
             default:
                 console.log("Unhandled event type:", eventType);
