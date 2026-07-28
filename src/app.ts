@@ -12,7 +12,12 @@ import { blockBot, blockExploits, blockMethods, blockSuspiciousPaths } from "./s
 
 const app: Express = express();
 
-app.use(express.json());
+// app.use(express.json());
+app.use(express.json({
+    verify: (req: any, _res, buf) => {
+        req.rawBody = buf;
+    },
+}))
 
 setupMiddleware(app);
 connectToMongoDB();

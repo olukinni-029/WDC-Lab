@@ -6,7 +6,11 @@ import { schemas, validate } from "../utils/validation";
 const walletRouter = Router();
 
 walletRouter.post("/signupfee", checkApiKey, validate(schemas.signUpSchema), WalletController.signUpFee);
-walletRouter.post("/webhook", WalletController.webhook);
+
+// walletRouter.post("/webhook", WalletController.webhook);
+
+
+
 walletRouter.post("/transfer", checkApiKey, validate(schemas.transferSchema), WalletController.transfer);
 walletRouter.post("/transactions", checkApiKey, WalletController.getAllUserTransactions);
 walletRouter.post("/wallet-history", checkApiKey, WalletController.getAllUserWalletHistory);
