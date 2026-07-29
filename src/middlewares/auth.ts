@@ -75,8 +75,8 @@ export const checkApiKey = async (
 
         const restCall = await restClientWithHeaders("GET", url, undefined, headers);
 
-        if (!restCall) {
-            return errorResponse(res, "Forbidden - Invalid API key FO2", 403);
+        if (restCall.success == false) {
+            return errorResponse(res, restCall?.message!, 403);
         }
 
         // TEMP DEBUG: uncomment while diagnosing shape mismatches, then remove.
