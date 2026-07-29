@@ -83,7 +83,7 @@ export const checkApiKey = async (
         // console.log("Raw partner API response:", JSON.stringify(restCall, null, 2));
 
         // Adjust this path once you've confirmed the real response shape.
-        console.log(restCall)
+        console.dir(restCall, {depth: null})
         restCallData = restCall?.data?.dataInfo;
 
         if (!restCallData || typeof restCallData !== "object") {
